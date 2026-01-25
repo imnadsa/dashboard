@@ -13,8 +13,8 @@ import {
 import { parseSummaryCSV, formatCurrency, SummaryData, Balances, ReviewData, DailyIncome, AverageStats } from './utils';
 import { ExpenseCategory } from './types';
 
-// НОВЫЙ URL для таблицы Клиент 2
-const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSuP3NXKluA1xWuNp8jokZwDNaH07kiO6PMH-3kHG47NUO3T5ABWW2I38JMsZsird7W1FX7VW17XS7S/pub?output=csv';
+// НОВЫЙ URL для таблицы Клиент 2 (лист "Сводка")
+const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSuP3NXKluA1xWuNp8jokZwDNaH07kiO6PMH-3kHG47NUO3T5ABWW2I38JMsZsird7W1FX7VW17XS7S/pub?gid=1453708249&single=true&output=csv';
 
 const EXPENSE_GRADIENTS = [
   { id: 'exp1', colors: ['#4295B0', '#2d5a6d'] },
