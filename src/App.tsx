@@ -4,15 +4,14 @@ import {
   PieChart, Pie, AreaChart, Area, Line, ComposedChart
 } from 'recharts';
 import { 
-  LayoutDashboard, RefreshCw, Calendar, ChevronDown, 
   ArrowUpRight, ArrowDownRight, Landmark, TrendingUp,
-  Wallet, Banknote, CreditCard, Star,
+  Wallet, Banknote, CreditCard,
   PieChart as PieIcon, Coins, Moon, Sun, Activity,
-  LucideIcon, Scale, Clock, Target
+  LucideIcon, Target, ChevronDown
 } from 'lucide-react';
-import { parseSummaryCSV, formatCurrency, SummaryData, Balances, ReviewData, DailyIncome, AverageStats } from './utils';
+import { parseSummaryCSV, formatCurrency, SummaryData, Balances, DailyIncome, AverageStats } from './utils';
 import { ExpenseCategory } from './types';
-import PasswordProtection from './PasswordProtection'; // ✅ Импортировали защиту
+import PasswordProtection from './PasswordProtection';
 
 const CSV_URL = import.meta.env.VITE_CSV_URL;
 const DASHBOARD_NAME = import.meta.env.VITE_DASHBOARD_NAME;
@@ -231,6 +230,7 @@ const App: React.FC = () => {
   const [dailyAverages, setDailyAverages] = useState<Record<string, AverageStats>>({});
   const [yearlyAverages, setYearlyAverages] = useState<AverageStats>({ revenue: 0, expense: 0, profit: 0 });
   const [isLoading, setIsLoading] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null); // ✅ Новое состояние для времени
   const [selectedMonth, setSelectedMonth] = useState<string>('');
   const [isDark, setIsDark] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -253,6 +253,9 @@ const App: React.FC = () => {
         setDailyIncome(data.dailyIncome);
         setDailyAverages(data.dailyAverages);
         setYearlyAverages(data.yearlyAverages);
+        
+        // ✅ Обновляем время успешного обновления
+        setLastUpdated(new Date());
 
         if (data.monthly.length > 0) {
           setMonthlyData(data.monthly);
@@ -271,7 +274,7 @@ const App: React.FC = () => {
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(() => fetchData(), 300000);
+    const interval = setInterval(() => fetchData(), 300000); // 5 минут
     return () => clearInterval(interval);
   }, []);
 
@@ -365,13 +368,12 @@ const App: React.FC = () => {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center">
             <div className="flex flex-col">
-              {/* ✅ ИСПОЛЬЗУЕМ НАЗВАНИЕ ИЗ ПЕРЕМЕННЫХ */}
               <h1 className={`text-[14px] sm:text-base font-extrabold tracking-tight uppercase leading-none ${isDark ? 'text-slate-100' : 'text-slate-800'}`}>{DASHBOARD_NAME}</h1>
               <p className={`text-[9px] sm:text-[11px] font-semibold mt-0.5 uppercase tracking-[0.25em] ${isDark ? 'text-brand-500/70' : 'text-brand/70'}`}>Дашборд</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-3">
             <button 
               onClick={() => setIsDark(!isDark)}
               className={`p-1.5 sm:p-2 rounded-lg transition-all active:scale-95 ${isDark ? 'bg-slate-800 text-amber-400 hover:bg-slate-700' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
@@ -392,9 +394,17 @@ const App: React.FC = () => {
               </select>
               <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400 pointer-events-none" />
             </div>
-            <button onClick={fetchData} disabled={isLoading} className={`p-1.5 rounded-lg transition-all active:scale-95 ${isDark ? 'text-brand-500 hover:bg-slate-800' : 'text-brand hover:bg-brand/5'}`}>
-              <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-            </button>
+            {/* ✅ НОВЫЙ ИНДИКАТОР ВРЕМЕНИ (Вместо кнопки) */}
+            {lastUpdated && (
+               <div className="hidden sm:flex flex-col items-end ml-1">
+                 <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-wide">
+                   Обновлено
+                 </span>
+                 <span className={`text-[10px] font-semibold ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                   {lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                 </span>
+               </div>
+            )}
           </div>
         </div>
       </header>
@@ -450,6 +460,7 @@ const App: React.FC = () => {
           </div>
           <div className="h-[200px] sm:h-[260px] w-full">
             <ResponsiveContainer width="100%" height="100%">
+              {/* ✅ ИНТЕРАКТИВНОСТЬ И ЦВЕТА */}
               <BarChart data={monthlyData}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? '#334155' : '#f1f5f9'} />
                 <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fontSize: 9, fontWeight: 500, fill: isDark ? '#475569' : '#94a3b8'}} />
@@ -474,9 +485,23 @@ const App: React.FC = () => {
                   }}
                   formatter={(v: any) => [formatCurrency(v), '']} 
                 />
-                <Bar dataKey="delta" radius={[4, 4, 0, 0]}>
+                <Bar 
+                  dataKey="delta" 
+                  radius={[4, 4, 0, 0]}
+                  cursor="pointer"
+                  onClick={(data) => setSelectedMonth(data.month)}
+                >
                   {monthlyData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.month === selectedMonth ? '#10b981' : isDark ? '#1e293b' : '#E2E8F0'} />
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={
+                        entry.month === selectedMonth 
+                          ? '#10b981' // Активный месяц (Зеленый)
+                          : isDark 
+                            ? '#475569' // ✅ ТЕМНАЯ ТЕМА: Светло-серо-синий (хорошо видно)
+                            : '#E2E8F0' // Светлая тема: Светло-серый
+                      } 
+                    />
                   ))}
                 </Bar>
               </BarChart>
@@ -610,14 +635,10 @@ const App: React.FC = () => {
   );
 };
 
-// ✅ ОБЕРТКА ДЛЯ ЗАЩИТЫ ПАРОЛЕМ
 const ProtectedApp = () => {
-  // Если пароля в .env нет, показываем App сразу
   if (!DASHBOARD_PASSWORD) {
     return <App />;
   }
-  
-  // Иначе показываем экран ввода пароля
   return (
     <PasswordProtection correctPassword={DASHBOARD_PASSWORD}>
       <App />
@@ -625,5 +646,4 @@ const ProtectedApp = () => {
   );
 };
 
-// Экспортируем защищенную версию
 export default ProtectedApp;
