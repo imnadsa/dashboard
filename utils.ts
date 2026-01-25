@@ -53,20 +53,40 @@ const getCells = (line: string) => {
   return line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(p => p.replace(/"/g, '').trim());
 };
 
-// Функция для извлечения названия месяца из даты
-const getMonthName = (dateStr: string): string => {
-  if (!dateStr) return '';
+// Функция для нормализации названий месяцев (из родительного падежа в именительный)
+const normalizeMonth = (monthStr: string): string => {
+  if (!monthStr) return '';
   
-  // Пытаемся распарсить дату
-  const date = new Date(dateStr);
-  if (isNaN(date.getTime())) return '';
+  const monthMap: Record<string, string> = {
+    'января': 'январь',
+    'февраля': 'февраль',
+    'марта': 'март',
+    'апреля': 'апрель',
+    'мая': 'май',
+    'июня': 'июнь',
+    'июля': 'июль',
+    'августа': 'август',
+    'сентября': 'сентябрь',
+    'октября': 'октябрь',
+    'ноября': 'ноябрь',
+    'декабря': 'декабрь',
+    // На всякий случай если уже в именительном падеже
+    'январь': 'январь',
+    'февраль': 'февраль',
+    'март': 'март',
+    'апрель': 'апрель',
+    'май': 'май',
+    'июнь': 'июнь',
+    'июль': 'июль',
+    'август': 'август',
+    'сентябрь': 'сентябрь',
+    'октябрь': 'октябрь',
+    'ноябрь': 'ноябрь',
+    'декабрь': 'декабрь'
+  };
   
-  const months = [
-    'январь', 'февраль', 'март', 'апрель', 'май', 'июнь',
-    'июль', 'август', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь'
-  ];
-  
-  return months[date.getMonth()];
+  const cleaned = monthStr.trim().toLowerCase();
+  return monthMap[cleaned] || '';
 };
 
 export const parseSummaryCSV = (csv: string): DashboardData => {
@@ -85,11 +105,11 @@ export const parseSummaryCSV = (csv: string): DashboardData => {
 
   if (lines.length < 10) return defaultData;
 
-  // СТРОКА 1: Заголовки с датами месяцев (колонки B-M = индексы 1-12)
+  // СТРОКА 1: Заголовки с названиями месяцев (колонки B-M = индексы 1-12)
   const monthHeaders = getCells(lines[0]);
   const monthNames: string[] = [];
   for (let i = 1; i <= 12; i++) {
-    const monthName = getMonthName(monthHeaders[i]);
+    const monthName = normalizeMonth(monthHeaders[i]);
     if (monthName) {
       monthNames.push(monthName);
     }
@@ -214,7 +234,7 @@ export const parseSummaryCSV = (csv: string): DashboardData => {
     // Извлекаем названия месяцев из заголовка (колонки B-M)
     const dailyMonthNames: string[] = [];
     for (let i = 1; i <= 12; i++) {
-      const monthName = getMonthName(dailyHeaderRow[i]);
+      const monthName = normalizeMonth(dailyHeaderRow[i]);
       if (monthName) {
         dailyMonthNames.push(monthName);
       }
