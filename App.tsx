@@ -12,9 +12,11 @@ import {
 } from 'lucide-react';
 import { parseSummaryCSV, formatCurrency, SummaryData, Balances, ReviewData, DailyIncome, AverageStats } from './utils';
 import { ExpenseCategory } from './types';
+import PasswordProtection from './PasswordProtection'; // ✅ Импортировали защиту
 
-// НОВЫЙ URL для таблицы Клиент 2 (лист "Сводка")
-const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSuP3NXKluA1xWuNp8jokZwDNaH07kiO6PMH-3kHG47NUO3T5ABWW2I38JMsZsird7W1FX7VW17XS7S/pub?gid=1453708249&single=true&output=csv';
+const CSV_URL = import.meta.env.VITE_CSV_URL;
+const DASHBOARD_NAME = import.meta.env.VITE_DASHBOARD_NAME;
+const DASHBOARD_PASSWORD = import.meta.env.VITE_DASHBOARD_PASSWORD;
 
 const EXPENSE_GRADIENTS = [
   { id: 'exp1', colors: ['#4295B0', '#2d5a6d'] },
@@ -363,7 +365,8 @@ const App: React.FC = () => {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center">
             <div className="flex flex-col">
-              <h1 className={`text-[14px] sm:text-base font-extrabold tracking-tight uppercase leading-none ${isDark ? 'text-slate-100' : 'text-slate-800'}`}>Клиент 2</h1>
+              {/* ✅ ИСПОЛЬЗУЕМ НАЗВАНИЕ ИЗ ПЕРЕМЕННЫХ */}
+              <h1 className={`text-[14px] sm:text-base font-extrabold tracking-tight uppercase leading-none ${isDark ? 'text-slate-100' : 'text-slate-800'}`}>{DASHBOARD_NAME}</h1>
               <p className={`text-[9px] sm:text-[11px] font-semibold mt-0.5 uppercase tracking-[0.25em] ${isDark ? 'text-brand-500/70' : 'text-brand/70'}`}>Дашборд</p>
             </div>
           </div>
@@ -602,11 +605,25 @@ const App: React.FC = () => {
             </ResponsiveContainer>
           </div>
         </section>
-
-        {/* БЛОК ОТЗЫВОВ УДАЛЕН - его больше нет в новой таблице */}
       </main>
     </div>
   );
 };
 
-export default App;
+// ✅ ОБЕРТКА ДЛЯ ЗАЩИТЫ ПАРОЛЕМ
+const ProtectedApp = () => {
+  // Если пароля в .env нет, показываем App сразу
+  if (!DASHBOARD_PASSWORD) {
+    return <App />;
+  }
+  
+  // Иначе показываем экран ввода пароля
+  return (
+    <PasswordProtection correctPassword={DASHBOARD_PASSWORD}>
+      <App />
+    </PasswordProtection>
+  );
+};
+
+// Экспортируем защищенную версию
+export default ProtectedApp;
