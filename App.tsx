@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
@@ -14,7 +13,8 @@ import {
 import { parseSummaryCSV, formatCurrency, SummaryData, Balances, ReviewData, DailyIncome, AverageStats } from './utils';
 import { ExpenseCategory } from './types';
 
-const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT2_6vOaombXqIOnH6EFV-QVpvgTry9qFqCDa5tjvH1sGxosCEgoKPoam-Kp6oS7TpicX8_x-zRj54D/pub?output=csv';
+// НОВЫЙ URL для таблицы Клиент 2
+const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSuP3NXKluA1xWuNp8jokZwDNaH07kiO6PMH-3kHG47NUO3T5ABWW2I38JMsZsird7W1FX7VW17XS7S/pub?output=csv';
 
 const EXPENSE_GRADIENTS = [
   { id: 'exp1', colors: ['#4295B0', '#2d5a6d'] },
@@ -220,24 +220,9 @@ const AverageEfficiencyCard = ({ label, monthVal, icon: Icon, color, isDark }: {
   );
 };
 
-const ReviewCard: React.FC<{ review: ReviewData, isDark: boolean }> = ({ review, isDark }) => (
-  <div className={`p-5 sm:p-6 rounded-2xl sm:rounded-3xl border shadow-sm hover:shadow-md transition-all ${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'}`}>
-    <div className="flex justify-between items-start mb-3 sm:mb-4">
-      <div className={`${isDark ? 'bg-amber-950/30' : 'bg-amber-50'} p-2 rounded-xl`}><Star className="w-4 h-4 text-amber-500 fill-amber-500" /></div>
-      <span className={`text-[9px] font-semibold uppercase tracking-wider ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>{review.count} отз.</span>
-    </div>
-    <h4 className={`text-[12px] font-medium mb-1 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>{review.platform}</h4>
-    <div className="flex items-end gap-1">
-      <span className={`text-lg sm:text-xl font-bold ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>{review.rating}</span>
-      <span className={`text-[9px] font-medium pb-1 uppercase ${isDark ? 'text-slate-600' : 'text-slate-300'}`}>/ 5.0</span>
-    </div>
-  </div>
-);
-
 const App: React.FC = () => {
   const [monthlyData, setMonthlyData] = useState<SummaryData[]>([]);
   const [balances, setBalances] = useState<Balances>({ totalFunds: 0, cash: 0, bankAccount: 0 });
-  const [reviews, setReviews] = useState<ReviewData[]>([]);
   const [detailedExpenses, setDetailedExpenses] = useState<Record<string, ExpenseCategory[]>>({});
   const [detailedIncome, setDetailedIncome] = useState<Record<string, ExpenseCategory[]>>({});
   const [dailyIncome, setDailyIncome] = useState<Record<string, DailyIncome[]>>({});
@@ -261,7 +246,6 @@ const App: React.FC = () => {
         const data = parseSummaryCSV(text);
         
         setBalances(data.balances);
-        setReviews(data.reviews);
         setDetailedExpenses(data.detailedExpenses);
         setDetailedIncome(data.detailedIncome);
         setDailyIncome(data.dailyIncome);
@@ -379,8 +363,8 @@ const App: React.FC = () => {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center">
             <div className="flex flex-col">
-              <h1 className={`text-[14px] sm:text-base font-extrabold tracking-tight uppercase leading-none ${isDark ? 'text-slate-100' : 'text-slate-800'}`}>Инвитро</h1>
-              <p className={`text-[9px] sm:text-[11px] font-semibold mt-0.5 uppercase tracking-[0.25em] ${isDark ? 'text-brand-500/70' : 'text-brand/70'}`}>Балашиха</p>
+              <h1 className={`text-[14px] sm:text-base font-extrabold tracking-tight uppercase leading-none ${isDark ? 'text-slate-100' : 'text-slate-800'}`}>Клиент 2</h1>
+              <p className={`text-[9px] sm:text-[11px] font-semibold mt-0.5 uppercase tracking-[0.25em] ${isDark ? 'text-brand-500/70' : 'text-brand/70'}`}>Дашборд</p>
             </div>
           </div>
 
@@ -425,7 +409,6 @@ const App: React.FC = () => {
           <StatCard label="Чистая прибыль" value={currentStats?.delta || 0} icon={Landmark} color="emerald" highlight isDark={isDark} />
         </section>
 
-        {/* Секция: Эффективность в день (3 показателя) */}
         <section className="space-y-6">
           <h2 className={`text-[9px] sm:text-[10px] font-semibold uppercase tracking-[0.3em] flex items-center gap-2 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
             Эффективность в день (в среднем)
@@ -620,15 +603,7 @@ const App: React.FC = () => {
           </div>
         </section>
 
-        <section className={`space-y-6 pt-10 border-t ${isDark ? 'border-slate-800' : 'border-slate-100'}`}>
-          <h2 className={`text-[9px] sm:text-[10px] font-semibold uppercase tracking-[0.3em] flex items-center gap-2 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
-            Репутация
-            <div className={`h-px flex-1 ${isDark ? 'bg-slate-800' : 'bg-slate-100'}`}></div>
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-            {reviews.map((review, idx) => <ReviewCard key={idx} review={review} isDark={isDark} />)}
-          </div>
-        </section>
+        {/* БЛОК ОТЗЫВОВ УДАЛЕН - его больше нет в новой таблице */}
       </main>
     </div>
   );
