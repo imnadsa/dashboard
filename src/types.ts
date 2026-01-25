@@ -1,4 +1,3 @@
-
 export interface Transaction {
   id: string;
   date: Date;
