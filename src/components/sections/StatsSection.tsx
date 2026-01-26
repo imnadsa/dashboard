@@ -1,5 +1,10 @@
 import React from 'react';
 import { ArrowUpRight, ArrowDownRight, Landmark, LucideIcon } from 'lucide-react';
+import Lottie from 'lottie-react';
+
+// Импорт анимаций
+import upAnimation from '../../assets/lottie/up.json';
+import downAnimation from '../../assets/lottie/down.json';
 
 interface StatsSectionProps {
   income: number;
@@ -11,12 +16,13 @@ interface StatsSectionProps {
 interface StatCardProps {
   label: string;
   value: number;
-  icon: LucideIcon;
+  icon?: LucideIcon;
+  lottieData?: any; // Поле для Lottie
   variant: 'brand' | 'rose' | 'emerald';
   isDark: boolean;
 }
 
-const StatCard: React.FC<StatCardProps> = ({ label, value, icon: Icon, variant, isDark }) => {
+const StatCard: React.FC<StatCardProps> = ({ label, value, icon: Icon, lottieData, variant, isDark }) => {
   const formattedValue = new Intl.NumberFormat('ru-RU').format(Math.abs(value));
   
   const themes = {
@@ -33,10 +39,9 @@ const StatCard: React.FC<StatCardProps> = ({ label, value, icon: Icon, variant, 
       valueText: isDark ? 'text-slate-100' : 'text-slate-900'
     },
     emerald: {
-      // Усиленный изумрудный стиль
       icon: 'bg-emerald-500 text-white shadow-[0_0_20px_rgba(16,185,129,0.4)]',
       border: isDark ? 'border-emerald-500/30' : 'border-emerald-100',
-      glow: isDark ? 'rgba(16,185,129,0.08)' : 'rgba(16,185,129,0.03)',
+      glow: isDark ? 'rgba(16,185,129,0.12)' : 'rgba(16,185,129,0.05)',
       valueText: isDark ? 'text-emerald-400' : 'text-emerald-600'
     }
   };
@@ -49,22 +54,30 @@ const StatCard: React.FC<StatCardProps> = ({ label, value, icon: Icon, variant, 
         isDark ? 'bg-slate-800/40' : 'bg-white shadow-sm hover:shadow-xl'
       } ${theme.border}`}
       style={{ 
-        boxShadow: variant === 'emerald' ? `0 10px 40px -10px ${theme.glow}` : undefined 
+        boxShadow: variant === 'emerald' ? `0 15px 45px -10px ${theme.glow}` : undefined 
       }}
     >
-      {/* Фоновое свечение только для прибыли */}
-      {variant === 'emerald' && (
-        <div className="absolute inset-0 rounded-[1.8rem] sm:rounded-[2.5rem] bg-emerald-500/[0.03] pointer-events-none" />
-      )}
-      
-      {/* Декоративный блик в углу для изумрудной карточки */}
       {variant === 'emerald' && (
         <div className="absolute -right-4 -top-4 w-24 h-24 bg-emerald-500/10 blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
       )}
 
       <div className="relative z-10 flex flex-col gap-5 sm:gap-6">
-        <div className={`w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-xl sm:rounded-2xl transition-transform duration-500 group-hover:scale-110 ${theme.icon}`}>
-          <Icon size={24} className="sm:w-[26px] sm:h-[26px]" strokeWidth={2.5} />
+        
+        {/* Контейнер для иконки или Lottie */}
+        <div className={`w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-xl sm:rounded-2xl transition-transform duration-500 group-hover:scale-110 ${
+          lottieData 
+            ? 'bg-transparent' // Убираем шейп для Lottie
+            : theme.icon + ' shadow-lg'
+        }`}>
+          {lottieData ? (
+            <Lottie 
+              animationData={lottieData} 
+              loop={true} 
+              className="w-14 h-14 sm:w-16 sm:h-16 scale-125" 
+            />
+          ) : (
+            Icon && <Icon size={24} className="sm:w-[26px] sm:h-[26px]" strokeWidth={2.5} />
+          )}
         </div>
 
         <div className="space-y-0.5 sm:space-y-1">
@@ -113,21 +126,21 @@ const StatsSection: React.FC<StatsSectionProps> = ({ income, expense, profit, is
         <StatCard
           label="Выручка"
           value={income}
-          icon={ArrowUpRight}
+          lottieData={upAnimation} // Анимация роста
           variant="brand"
           isDark={isDark}
         />
         <StatCard
           label="Расходы"
           value={expense}
-          icon={ArrowDownRight}
+          lottieData={downAnimation} // Анимация трат
           variant="rose"
           isDark={isDark}
         />
         <StatCard
           label="Чистая прибыль"
           value={profit}
-          icon={Landmark}
+          icon={Landmark} // Оставляем иконку банка или замени на другой лоти если будет
           variant="emerald"
           isDark={isDark}
         />
