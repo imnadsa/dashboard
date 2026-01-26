@@ -82,17 +82,7 @@ const Header: React.FC<HeaderProps> = ({
           )}
 
           {/* Logout */}
-          <button
-            onClick={onLogout}
-            className={`p-2 rounded-xl transition-all active:scale-95 ${
-              isDark 
-                ? 'bg-slate-800 text-slate-400 hover:text-rose-400 hover:bg-slate-700' 
-                : 'bg-slate-100 text-slate-400 hover:text-rose-500 hover:bg-slate-200'
-            }`}
-            title="Выйти"
-          >
-            <LogOut size={18} />
-          </button>
+          
         </div>
       </div>
     </header>
