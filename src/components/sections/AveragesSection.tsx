@@ -94,7 +94,7 @@ const AveragesSection: React.FC<AveragesSectionProps> = ({ averages, isDark }) =
             <span className="animate-[pulse_3s_ease-in-out_infinite] inline-flex h-full w-full rounded-full bg-amber-500/80"></span>
           </div>
           <h2 className={`text-xl sm:text-2xl font-black tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
-            Средние показатели
+            Средние показатели в день
           </h2>
         </div>
         <p className={`text-xs sm:text-sm font-medium leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
