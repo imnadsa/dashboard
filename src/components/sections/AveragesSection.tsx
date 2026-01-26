@@ -48,11 +48,13 @@ const AverageCard: React.FC<AverageCardProps> = ({ label, value, icon: Icon, var
         boxShadow: variant === 'emerald' ? `0 10px 40px -10px ${theme.glow}` : undefined 
       }}
     >
+      {/* Фоновое свечение для прибыли */}
       {variant === 'emerald' && (
         <div className="absolute -right-4 -top-4 w-24 h-24 bg-emerald-500/10 blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
       )}
 
       <div className="relative z-10 flex flex-col gap-5 sm:gap-6">
+        {/* Иконка */}
         <div className={`w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-xl sm:rounded-2xl transition-transform duration-500 group-hover:scale-110 ${theme.icon}`}>
           <Icon size={24} className="sm:w-[26px] sm:h-[26px]" strokeWidth={2.5} />
         </div>
@@ -100,6 +102,7 @@ const AveragesSection: React.FC<AveragesSectionProps> = ({ averages, isDark }) =
         </p>
       </div>
 
+      {/* Сетка карточек */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-8">
         <AverageCard
           label="Выручка в день"
