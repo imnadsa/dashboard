@@ -1,6 +1,10 @@
 import React from 'react';
 import { Wallet, Banknote, CreditCard, LucideIcon } from 'lucide-react';
+import Lottie from 'lottie-react';
 import { Balances } from '../../types';
+
+// Импортируем твой JSON файл с анимацией
+import firstAnimation from '../../assets/lottie/first.json';
 
 interface BalancesSectionProps {
   balances: Balances;
@@ -10,12 +14,13 @@ interface BalancesSectionProps {
 interface BalanceCardProps {
   label: string;
   value: number;
-  icon: LucideIcon;
+  icon?: LucideIcon; // Сделали необязательным
+  lottieData?: any;  // Добавили поле для Lottie
   isPrimary?: boolean;
   isDark: boolean;
 }
 
-const BalanceCard: React.FC<BalanceCardProps> = ({ label, value, icon: Icon, isPrimary, isDark }) => {
+const BalanceCard: React.FC<BalanceCardProps> = ({ label, value, icon: Icon, lottieData, isPrimary, isDark }) => {
   const formattedValue = new Intl.NumberFormat('ru-RU').format(value);
 
   return (
@@ -29,15 +34,23 @@ const BalanceCard: React.FC<BalanceCardProps> = ({ label, value, icon: Icon, isP
       }`}
     >
       <div className="relative z-10 flex flex-col gap-5 sm:gap-6">
-        {/* Иконка */}
-        <div className={`w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-xl sm:rounded-2xl shadow-lg ${
+        {/* Контейнер для иконки или Lottie */}
+        <div className={`w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-xl sm:rounded-2xl shadow-lg overflow-hidden ${
           isPrimary 
             ? 'bg-white/20 backdrop-blur-md' 
             : isDark 
               ? 'bg-slate-900/60 text-brand' 
               : 'bg-brand/5 text-brand'
         }`}>
-          <Icon size={24} className="sm:w-[26px] sm:h-[26px]" strokeWidth={1.5} />
+          {lottieData ? (
+            <Lottie 
+              animationData={lottieData} 
+              loop={true} 
+              className="w-10 h-10 sm:w-12 sm:h-12 scale-125" // Масштабируем, если анимация мелкая
+            />
+          ) : (
+            Icon && <Icon size={24} className="sm:w-[26px] sm:h-[26px]" strokeWidth={1.5} />
+          )}
         </div>
 
         <div className="space-y-0.5 sm:space-y-1">
@@ -66,10 +79,8 @@ const BalancesSection: React.FC<BalancesSectionProps> = ({ balances, isDark }) =
         : 'bg-slate-50/50 border-slate-200/60'
     }`}>
       
-      {/* Шапка блока */}
       <div className="space-y-2 mb-8 sm:mb-10">
         <div className="flex items-center gap-3">
-          {/* Очень медленная и мягкая пульсация */}
           <div className="flex h-2.5 w-2.5">
             <span className="animate-[pulse_3s_ease-in-out_infinite] inline-flex h-full w-full rounded-full bg-emerald-500/80"></span>
           </div>
@@ -82,12 +93,12 @@ const BalancesSection: React.FC<BalancesSectionProps> = ({ balances, isDark }) =
         </p>
       </div>
 
-      {/* Сетка карточек */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-8">
+        {/* Первая карточка теперь с Lottie */}
         <BalanceCard
           label="Всего средств"
           value={balances.totalFunds}
-          icon={Wallet}
+          lottieData={firstAnimation}
           isPrimary
           isDark={isDark}
         />
