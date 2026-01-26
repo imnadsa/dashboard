@@ -35,42 +35,41 @@ const BalanceCard: React.FC<BalanceCardProps> = ({ label, value, icon: Icon, lot
             : 'bg-white border border-slate-100 shadow-sm'
       }`}
     >
-      <div className="relative z-10 flex flex-col gap-5 sm:gap-6">
+      <div className="relative z-10 flex flex-col gap-6 sm:gap-8">
         
-        {/* Контейнер для иконки или Lottie */}
-        <div className={`w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-xl sm:rounded-2xl transition-transform duration-500 group-hover:scale-110 ${
+        {/* Контейнер для анимации - увеличен и с разрешением на вылет за границы */}
+        <div className={`relative w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center transition-transform duration-500 group-hover:scale-110 ${
           lottieData
-            ? 'bg-transparent' // Прозрачный фон, если есть Lottie
+            ? 'bg-transparent' 
             : isPrimary 
-              ? 'bg-white/20 backdrop-blur-md shadow-lg' 
-              : isDark 
-                ? 'bg-slate-900/60 text-brand' 
-                : 'bg-brand/5 text-brand'
+              ? 'bg-white/20 backdrop-blur-md rounded-2xl shadow-lg' 
+              : 'bg-slate-900/60 text-brand rounded-2xl'
         }`}>
           {lottieData ? (
             <Lottie 
               animationData={lottieData} 
               loop={true} 
-              className="w-14 h-14 sm:w-16 sm:h-16 scale-110" 
+              // SCALE [2.0] - анимация будет ОГРОМНОЙ и парить над карточкой
+              className="w-24 h-24 sm:w-32 sm:h-32 scale-[2.0] pointer-events-none" 
             />
           ) : (
-            Icon && <Icon size={24} className="sm:w-[26px] sm:h-[26px]" strokeWidth={1.5} />
+            Icon && <Icon size={28} strokeWidth={1.5} />
           )}
         </div>
 
-        <div className="space-y-0.5 sm:space-y-1">
+        <div className="space-y-1 sm:space-y-2">
           <p className={`text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.15em] opacity-60 ${
             isPrimary ? 'text-white' : isDark ? 'text-slate-400' : 'text-slate-500'
           }`}>
             {label}
           </p>
           <div className="flex items-baseline gap-1.5">
-            <h3 className={`text-2xl sm:text-3xl font-black tracking-tighter tabular-nums ${
+            <h3 className={`text-2xl sm:text-4xl font-black tracking-tighter tabular-nums ${
               isPrimary ? 'text-white' : isDark ? 'text-slate-100' : 'text-slate-900'
             }`}>
               {formattedValue}
             </h3>
-            <span className={`text-lg sm:text-xl font-light opacity-50 ${
+            <span className={`text-lg sm:text-2xl font-light opacity-50 ${
               isPrimary ? 'text-white' : isDark ? 'text-slate-100' : 'text-slate-900'
             }`}>₽</span>
           </div>
@@ -82,16 +81,18 @@ const BalanceCard: React.FC<BalanceCardProps> = ({ label, value, icon: Icon, lot
 
 const BalancesSection: React.FC<BalancesSectionProps> = ({ balances, isDark }) => {
   return (
-    <section className={`relative px-6 py-8 sm:p-10 rounded-[2rem] sm:rounded-[3rem] border transition-all duration-500 ${
+    <section className={`relative px-6 py-8 sm:p-10 rounded-[2.2rem] sm:rounded-[3rem] border transition-all duration-500 ${
       isDark 
-        ? 'bg-slate-900/50 border-slate-800/50 backdrop-blur-2xl' 
-        : 'bg-slate-50/50 border-slate-200/60'
+        ? 'bg-slate-900/50 border-slate-800/50 backdrop-blur-2xl shadow-xl' 
+        : 'bg-slate-50/50 border-slate-200/60 shadow-sm'
     }`}>
       
-      <div className="space-y-2 mb-8 sm:mb-10">
+      {/* Шапка блока */}
+      <div className="space-y-2 mb-10 sm:mb-12">
         <div className="flex items-center gap-3">
+          {/* Очень медленная и мягкая пульсация для спокойного взгляда */}
           <div className="flex h-2.5 w-2.5">
-            <span className="animate-[pulse_3s_ease-in-out_infinite] inline-flex h-full w-full rounded-full bg-emerald-500/80"></span>
+            <span className="animate-[pulse_4s_ease-in-out_infinite] inline-flex h-full w-full rounded-full bg-emerald-500/80 shadow-[0_0_10px_rgba(16,185,129,0.4)]"></span>
           </div>
           <h2 className={`text-xl sm:text-2xl font-black tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
             Остатки на счетах
@@ -102,7 +103,8 @@ const BalancesSection: React.FC<BalancesSectionProps> = ({ balances, isDark }) =
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-8">
+      {/* Сетка карточек */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-8">
         <BalanceCard
           label="Всего средств"
           value={balances.totalFunds}
