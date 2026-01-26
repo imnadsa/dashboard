@@ -3,7 +3,7 @@ import { Wallet, Banknote, CreditCard, LucideIcon } from 'lucide-react';
 import Lottie from 'lottie-react';
 import { Balances } from '../../types';
 
-// Импортируем твой JSON файл с анимацией
+// Импорт анимации
 import firstAnimation from '../../assets/lottie/first.json';
 
 interface BalancesSectionProps {
@@ -14,8 +14,8 @@ interface BalancesSectionProps {
 interface BalanceCardProps {
   label: string;
   value: number;
-  icon?: LucideIcon; // Сделали необязательным
-  lottieData?: any;  // Добавили поле для Lottie
+  icon?: LucideIcon;
+  lottieData?: any;
   isPrimary?: boolean;
   isDark: boolean;
 }
@@ -34,19 +34,22 @@ const BalanceCard: React.FC<BalanceCardProps> = ({ label, value, icon: Icon, lot
       }`}
     >
       <div className="relative z-10 flex flex-col gap-5 sm:gap-6">
+        
         {/* Контейнер для иконки или Lottie */}
-        <div className={`w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-xl sm:rounded-2xl shadow-lg overflow-hidden ${
-          isPrimary 
-            ? 'bg-white/20 backdrop-blur-md' 
-            : isDark 
-              ? 'bg-slate-900/60 text-brand' 
-              : 'bg-brand/5 text-brand'
+        <div className={`w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-xl sm:rounded-2xl transition-transform duration-500 group-hover:scale-110 ${
+          lottieData
+            ? 'bg-transparent' // УБРАЛИ БЕЛЫЙ ШЕЙП (фон) для Lottie
+            : isPrimary 
+              ? 'bg-white/20 backdrop-blur-md shadow-lg' 
+              : isDark 
+                ? 'bg-slate-900/60 text-brand' 
+                : 'bg-brand/5 text-brand'
         }`}>
           {lottieData ? (
             <Lottie 
               animationData={lottieData} 
               loop={true} 
-              className="w-10 h-10 sm:w-12 sm:h-12 scale-125" // Масштабируем, если анимация мелкая
+              className="w-14 h-14 sm:w-16 sm:h-16" // Сделали чуть крупнее, так как рамки нет
             />
           ) : (
             Icon && <Icon size={24} className="sm:w-[26px] sm:h-[26px]" strokeWidth={1.5} />
@@ -94,7 +97,6 @@ const BalancesSection: React.FC<BalancesSectionProps> = ({ balances, isDark }) =
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-8">
-        {/* Первая карточка теперь с Lottie */}
         <BalanceCard
           label="Всего средств"
           value={balances.totalFunds}
