@@ -22,18 +22,20 @@ const AverageCard: React.FC<AverageCardProps> = ({ label, value, icon: Icon, var
     brand: {
       icon: 'bg-blue-500 text-white',
       border: isDark ? 'border-slate-700/50 hover:border-blue-500/50' : 'border-slate-100 hover:border-blue-200',
-      valueText: isDark ? 'text-slate-100' : 'text-slate-900'
+      valueText: isDark ? 'text-slate-100' : 'text-slate-900',
+      glow: 'transparent' // Добавлено для типизации
     },
     rose: {
       icon: 'bg-rose-500 text-white',
       border: isDark ? 'border-slate-700/50 hover:border-rose-500/50' : 'border-slate-100 hover:border-rose-200',
-      valueText: isDark ? 'text-slate-100' : 'text-slate-900'
+      valueText: isDark ? 'text-slate-100' : 'text-slate-900',
+      glow: 'transparent' // Добавлено для типизации
     },
     emerald: {
       icon: 'bg-emerald-500 text-white shadow-[0_0_20px_rgba(16,185,129,0.4)]',
       border: isDark ? 'border-emerald-500/30' : 'border-emerald-100',
-      glow: isDark ? 'rgba(16,185,129,0.08)' : 'rgba(16,185,129,0.03)',
-      valueText: isDark ? 'text-emerald-400' : 'text-emerald-600'
+      valueText: isDark ? 'text-emerald-400' : 'text-emerald-600',
+      glow: isDark ? 'rgba(16,185,129,0.15)' : 'rgba(16,185,129,0.05)'
     }
   };
 
@@ -45,7 +47,7 @@ const AverageCard: React.FC<AverageCardProps> = ({ label, value, icon: Icon, var
         isDark ? 'bg-slate-800/40' : 'bg-white shadow-sm hover:shadow-xl'
       } ${theme.border}`}
       style={{ 
-        boxShadow: variant === 'emerald' ? `0 10px 40px -10px ${theme.glow}` : undefined 
+        boxShadow: variant === 'emerald' ? `0 15px 45px -10px ${theme.glow}` : undefined 
       }}
     >
       {/* Фоновое свечение для прибыли */}
@@ -54,7 +56,6 @@ const AverageCard: React.FC<AverageCardProps> = ({ label, value, icon: Icon, var
       )}
 
       <div className="relative z-10 flex flex-col gap-5 sm:gap-6">
-        {/* Иконка */}
         <div className={`w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-xl sm:rounded-2xl transition-transform duration-500 group-hover:scale-110 ${theme.icon}`}>
           <Icon size={24} className="sm:w-[26px] sm:h-[26px]" strokeWidth={2.5} />
         </div>
@@ -87,7 +88,6 @@ const AveragesSection: React.FC<AveragesSectionProps> = ({ averages, isDark }) =
         : 'bg-slate-50/50 border-slate-200/60'
     }`}>
       
-      {/* Шапка блока */}
       <div className="space-y-2 mb-8 sm:mb-10">
         <div className="flex items-center gap-3">
           <div className="flex h-2.5 w-2.5">
@@ -102,7 +102,6 @@ const AveragesSection: React.FC<AveragesSectionProps> = ({ averages, isDark }) =
         </p>
       </div>
 
-      {/* Сетка карточек */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-8">
         <AverageCard
           label="Выручка в день"
