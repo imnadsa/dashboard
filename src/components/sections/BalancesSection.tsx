@@ -50,7 +50,7 @@ const BalanceCard: React.FC<BalanceCardProps> = ({ label, value, icon: Icon, lot
               animationData={lottieData} 
               loop={true} 
               // SCALE [2.0] - анимация будет ОГРОМНОЙ и парить над карточкой
-              className="w-24 h-24 sm:w-32 sm:h-32 scale-[2.0] pointer-events-none" 
+              className="w-24 h-24 sm:w-32 sm:h-32 scale-[1.5] pointer-events-none" 
             />
           ) : (
             Icon && <Icon size={28} strokeWidth={1.5} />
