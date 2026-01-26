@@ -3,8 +3,10 @@ import { Wallet, Banknote, CreditCard, LucideIcon } from 'lucide-react';
 import Lottie from 'lottie-react';
 import { Balances } from '../../types';
 
-// Импорт анимации
+// Импорт анимаций
 import firstAnimation from '../../assets/lottie/first.json';
+import cashAnimation from '../../assets/lottie/cash.json';
+import cardAnimation from '../../assets/lottie/card.json';
 
 interface BalancesSectionProps {
   balances: Balances;
@@ -38,7 +40,7 @@ const BalanceCard: React.FC<BalanceCardProps> = ({ label, value, icon: Icon, lot
         {/* Контейнер для иконки или Lottie */}
         <div className={`w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-xl sm:rounded-2xl transition-transform duration-500 group-hover:scale-110 ${
           lottieData
-            ? 'bg-transparent' // УБРАЛИ БЕЛЫЙ ШЕЙП (фон) для Lottie
+            ? 'bg-transparent' // Прозрачный фон, если есть Lottie
             : isPrimary 
               ? 'bg-white/20 backdrop-blur-md shadow-lg' 
               : isDark 
@@ -49,7 +51,7 @@ const BalanceCard: React.FC<BalanceCardProps> = ({ label, value, icon: Icon, lot
             <Lottie 
               animationData={lottieData} 
               loop={true} 
-              className="w-14 h-14 sm:w-16 sm:h-16" // Сделали чуть крупнее, так как рамки нет
+              className="w-14 h-14 sm:w-16 sm:h-16 scale-110" 
             />
           ) : (
             Icon && <Icon size={24} className="sm:w-[26px] sm:h-[26px]" strokeWidth={1.5} />
@@ -63,10 +65,14 @@ const BalanceCard: React.FC<BalanceCardProps> = ({ label, value, icon: Icon, lot
             {label}
           </p>
           <div className="flex items-baseline gap-1.5">
-            <h3 className="text-2xl sm:text-3xl font-black tracking-tighter tabular-nums">
+            <h3 className={`text-2xl sm:text-3xl font-black tracking-tighter tabular-nums ${
+              isPrimary ? 'text-white' : isDark ? 'text-slate-100' : 'text-slate-900'
+            }`}>
               {formattedValue}
             </h3>
-            <span className="text-lg sm:text-xl font-light opacity-50">₽</span>
+            <span className={`text-lg sm:text-xl font-light opacity-50 ${
+              isPrimary ? 'text-white' : isDark ? 'text-slate-100' : 'text-slate-900'
+            }`}>₽</span>
           </div>
         </div>
       </div>
@@ -107,13 +113,13 @@ const BalancesSection: React.FC<BalancesSectionProps> = ({ balances, isDark }) =
         <BalanceCard
           label="Наличные"
           value={balances.cash}
-          icon={Banknote}
+          lottieData={cashAnimation}
           isDark={isDark}
         />
         <BalanceCard
           label="Банковский счет"
           value={balances.bankAccount}
-          icon={CreditCard}
+          lottieData={cardAnimation}
           isDark={isDark}
         />
       </div>
