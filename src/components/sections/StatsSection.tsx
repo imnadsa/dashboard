@@ -19,25 +19,25 @@ interface StatCardProps {
 const StatCard: React.FC<StatCardProps> = ({ label, value, icon: Icon, variant, isDark }) => {
   const formattedValue = new Intl.NumberFormat('ru-RU').format(Math.abs(value));
   
-  // Цветовые схемы для вариантов
   const themes = {
     brand: {
-      bg: isDark ? 'bg-blue-500/10' : 'bg-blue-50',
       icon: 'bg-blue-500 text-white',
-      text: isDark ? 'text-blue-400' : 'text-blue-600',
-      border: isDark ? 'hover:border-blue-500/50' : 'hover:border-blue-200',
+      border: isDark ? 'border-slate-700/50 hover:border-blue-500/50' : 'border-slate-100 hover:border-blue-200',
+      glow: 'transparent',
+      valueText: isDark ? 'text-slate-100' : 'text-slate-900'
     },
     rose: {
-      bg: isDark ? 'bg-rose-500/10' : 'bg-rose-50',
       icon: 'bg-rose-500 text-white',
-      text: isDark ? 'text-rose-400' : 'text-rose-600',
-      border: isDark ? 'hover:border-rose-500/50' : 'hover:border-rose-200',
+      border: isDark ? 'border-slate-700/50 hover:border-rose-500/50' : 'border-slate-100 hover:border-rose-200',
+      glow: 'transparent',
+      valueText: isDark ? 'text-slate-100' : 'text-slate-900'
     },
     emerald: {
-      bg: isDark ? 'bg-emerald-500/10' : 'bg-emerald-50',
-      icon: 'bg-emerald-500 text-white',
-      text: isDark ? 'text-emerald-400' : 'text-emerald-600',
-      border: isDark ? 'hover:border-emerald-500/50' : 'hover:border-emerald-200',
+      // Усиленный изумрудный стиль
+      icon: 'bg-emerald-500 text-white shadow-[0_0_20px_rgba(16,185,129,0.4)]',
+      border: isDark ? 'border-emerald-500/30' : 'border-emerald-100',
+      glow: isDark ? 'rgba(16,185,129,0.08)' : 'rgba(16,185,129,0.03)',
+      valueText: isDark ? 'text-emerald-400' : 'text-emerald-600'
     }
   };
 
@@ -45,31 +45,41 @@ const StatCard: React.FC<StatCardProps> = ({ label, value, icon: Icon, variant, 
 
   return (
     <div
-      className={`relative group p-6 sm:p-8 rounded-[1.8rem] sm:rounded-[2.5rem] transition-all duration-500 hover:-translate-y-1 border ${
-        isDark 
-          ? 'bg-slate-800/40 border-slate-700/50 backdrop-blur-md' 
-          : 'bg-white border-slate-100 shadow-sm hover:shadow-xl'
+      className={`relative group p-6 sm:p-8 rounded-[1.8rem] sm:rounded-[2.5rem] transition-all duration-500 hover:-translate-y-1 border backdrop-blur-md ${
+        isDark ? 'bg-slate-800/40' : 'bg-white shadow-sm hover:shadow-xl'
       } ${theme.border}`}
+      style={{ 
+        boxShadow: variant === 'emerald' ? `0 10px 40px -10px ${theme.glow}` : undefined 
+      }}
     >
+      {/* Фоновое свечение только для прибыли */}
+      {variant === 'emerald' && (
+        <div className="absolute inset-0 rounded-[1.8rem] sm:rounded-[2.5rem] bg-emerald-500/[0.03] pointer-events-none" />
+      )}
+      
+      {/* Декоративный блик в углу для изумрудной карточки */}
+      {variant === 'emerald' && (
+        <div className="absolute -right-4 -top-4 w-24 h-24 bg-emerald-500/10 blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+      )}
+
       <div className="relative z-10 flex flex-col gap-5 sm:gap-6">
-        {/* Иконка в цветном боксе */}
-        <div className={`w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-xl sm:rounded-2xl shadow-lg transition-transform duration-500 group-hover:scale-110 ${theme.icon}`}>
-          <Icon size={24} className="sm:w-[26px] sm:h-[26px]" strokeWidth={2} />
+        <div className={`w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-xl sm:rounded-2xl transition-transform duration-500 group-hover:scale-110 ${theme.icon}`}>
+          <Icon size={24} className="sm:w-[26px] sm:h-[26px]" strokeWidth={2.5} />
         </div>
 
         <div className="space-y-0.5 sm:space-y-1">
           <p className={`text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.15em] ${
-            isDark ? 'text-slate-500' : 'text-slate-400'
+            variant === 'emerald' 
+              ? (isDark ? 'text-emerald-500/70' : 'text-emerald-600/70') 
+              : (isDark ? 'text-slate-500' : 'text-slate-400')
           }`}>
             {label}
           </p>
           <div className="flex items-baseline gap-1.5">
-            <h3 className={`text-2xl sm:text-3xl font-black tracking-tighter tabular-nums ${
-              isDark ? 'text-slate-100' : 'text-slate-900'
-            }`}>
+            <h3 className={`text-2xl sm:text-3xl font-black tracking-tighter tabular-nums ${theme.valueText}`}>
               {value < 0 ? '-' : ''}{formattedValue}
             </h3>
-            <span className={`text-lg sm:text-xl font-light opacity-50 ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>₽</span>
+            <span className={`text-lg sm:text-xl font-light opacity-50 ${theme.valueText}`}>₽</span>
           </div>
         </div>
       </div>
@@ -85,7 +95,6 @@ const StatsSection: React.FC<StatsSectionProps> = ({ income, expense, profit, is
         : 'bg-slate-50/50 border-slate-200/60'
     }`}>
       
-      {/* Шапка блока */}
       <div className="space-y-2 mb-8 sm:mb-10">
         <div className="flex items-center gap-3">
           <div className="flex h-2.5 w-2.5">
@@ -100,7 +109,6 @@ const StatsSection: React.FC<StatsSectionProps> = ({ income, expense, profit, is
         </p>
       </div>
 
-      {/* Сетка карточек */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-8">
         <StatCard
           label="Выручка"
