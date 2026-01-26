@@ -1,0 +1,132 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================ */
+/* Base styles                                  */
+/* ============================================ */
+
+body {
+  font-family: 'Montserrat', system-ui, sans-serif;
+  margin: 0;
+  transition: background-color 0.3s ease;
+}
+
+/* Light mode */
+body {
+  background-color: #FBFBFE;
+}
+
+/* Dark mode */
+body.dark {
+  background-color: #0b0f19;
+}
+
+/* ============================================ */
+/* Custom scrollbar                             */
+/* ============================================ */
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #e2e8f0;
+  border-radius: 10px;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #334155;
+}
+
+/* ============================================ */
+/* Glassmorphism utilities                      */
+/* ============================================ */
+
+.glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+.dark .glass {
+  background: rgba(15, 22, 41, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+}
+
+.dark .glass-card {
+  background: rgba(15, 22, 41, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.glass-card-accent {
+  background: rgba(66, 149, 176, 0.08);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(66, 149, 176, 0.2);
+  box-shadow: 0 8px 32px rgba(66, 149, 176, 0.1);
+}
+
+.dark .glass-card-accent {
+  background: rgba(66, 149, 176, 0.1);
+  border: 1px solid rgba(66, 149, 176, 0.25);
+  box-shadow: 0 8px 32px rgba(66, 149, 176, 0.15);
+}
+
+/* ============================================ */
+/* Animations                                   */
+/* ============================================ */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+@keyframes pulse-soft {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 2s ease-in-out infinite;
+}
+
+/* ============================================ */
+/* Chart customizations                         */
+/* ============================================ */
+
+.recharts-cartesian-grid-horizontal line {
+  stroke: #f1f5f9;
+}
+
+.dark .recharts-cartesian-grid-horizontal line {
+  stroke: #1e293b;
+}
