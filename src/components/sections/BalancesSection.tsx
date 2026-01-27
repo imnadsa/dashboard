@@ -1,6 +1,6 @@
-import React, { useRef } from 'react'; // Добавили useRef
+import React, { useRef } from 'react';
 import { Wallet, Banknote, CreditCard, LucideIcon } from 'lucide-react';
-import Lottie, { LottieRefApi } from 'lottie-react'; // Добавили тип LottieRefApi
+import Lottie from 'lottie-react'; // Убрали импорт типа LottieRefApi
 import { Balances } from '../../types';
 
 import firstAnimation from '../../assets/lottie/first.json';
@@ -24,12 +24,11 @@ interface BalanceCardProps {
 const BalanceCard: React.FC<BalanceCardProps> = ({ label, value, icon: Icon, lottieData, isPrimary, isDark }) => {
   const formattedValue = new Intl.NumberFormat('ru-RU').format(value);
   
-  // Создаем ссылку на управление анимацией
-  const lottieRef = useRef<LottieRefApi | null>(null);
+  // Используем <any>, чтобы TypeScript не ругался на версию библиотеки
+  const lottieRef = useRef<any>(null);
 
   return (
     <div
-      // УПРАВЛЕНИЕ АНИМАЦИЕЙ ПРИ НАВЕДЕНИИ
       onMouseEnter={() => lottieRef.current?.play()}
       onMouseLeave={() => lottieRef.current?.stop()} 
       className={`relative group p-6 sm:p-8 rounded-[1.8rem] sm:rounded-[2.5rem] transition-all duration-500 hover:-translate-y-1 cursor-default ${
@@ -41,17 +40,16 @@ const BalanceCard: React.FC<BalanceCardProps> = ({ label, value, icon: Icon, lot
       }`}
     >
       <div className="relative z-10 flex flex-col gap-6 sm:gap-8">
-        
         <div className={`relative w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center transition-transform duration-500 group-hover:scale-110 ${
           lottieData ? 'bg-transparent' : 'bg-slate-900/60 rounded-2xl text-brand'
         }`}>
           {lottieData ? (
             <Lottie 
-              lottieRef={lottieRef} // Привязываем ссылку
+              lottieRef={lottieRef}
               animationData={lottieData} 
               loop={true} 
-              autoplay={false} // ОСТАНОВЛЕНО ПО УМОЛЧАНИЮ
-              className="w-24 h-24 sm:w-32 sm:h-32 scale-[1.5] pointer-events-none" 
+              autoplay={false}
+              className="w-24 h-24 sm:w-32 sm:h-32 scale-[2.0] pointer-events-none" 
             />
           ) : (
             Icon && <Icon size={28} strokeWidth={1.5} />
@@ -87,11 +85,10 @@ const BalancesSection: React.FC<BalancesSectionProps> = ({ balances, isDark }) =
         ? 'bg-slate-900/50 border-slate-800/50 backdrop-blur-2xl shadow-xl' 
         : 'bg-slate-50/50 border-slate-200/60 shadow-sm'
     }`}>
-      
       <div className="space-y-2 mb-10 sm:mb-12">
         <div className="flex items-center gap-3">
           <div className="flex h-2.5 w-2.5">
-            <span className="animate-[pulse_4s_ease-in-out_infinite] inline-flex h-full w-full rounded-full bg-emerald-500/80 shadow-[0_0_10px_rgba(16,185,129,0.4)]"></span>
+            <span className="animate-[pulse_4s_ease-in-out_infinite] inline-flex h-full w-full rounded-full bg-emerald-500/80"></span>
           </div>
           <h2 className={`text-xl sm:text-2xl font-black tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
             Остатки на счетах
