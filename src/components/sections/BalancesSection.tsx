@@ -49,7 +49,7 @@ const BalanceCard: React.FC<BalanceCardProps> = ({ label, value, icon: Icon, lot
               animationData={lottieData} 
               loop={true} 
               autoplay={false}
-              className="w-24 h-24 sm:w-32 sm:h-32 scale-[2.0] pointer-events-none" 
+              className="w-24 h-24 sm:w-32 sm:h-32 scale-[1.3] pointer-events-none" 
             />
           ) : (
             Icon && <Icon size={28} strokeWidth={1.5} />
