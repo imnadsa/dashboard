@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { ArrowUpRight, ArrowDownRight, Landmark, LucideIcon } from 'lucide-react';
+import { Landmark, LucideIcon } from 'lucide-react';
 import Lottie from 'lottie-react';
 
 // Импорт анимаций
@@ -27,24 +27,9 @@ const StatCard: React.FC<StatCardProps> = ({ label, value, icon: Icon, lottieDat
   const lottieRef = useRef<any>(null);
 
   const themes = {
-    brand: {
-      icon: 'bg-blue-500 text-white',
-      border: isDark ? 'border-slate-700/50 hover:border-blue-500/50' : 'border-slate-100 hover:border-blue-200',
-      glow: 'transparent',
-      valueText: isDark ? 'text-slate-100' : 'text-slate-900'
-    },
-    rose: {
-      icon: 'bg-rose-500 text-white',
-      border: isDark ? 'border-slate-700/50 hover:border-rose-500/50' : 'border-slate-100 hover:border-rose-200',
-      glow: 'transparent',
-      valueText: isDark ? 'text-slate-100' : 'text-slate-900'
-    },
-    emerald: {
-      icon: 'bg-emerald-500 text-white shadow-[0_0_20px_rgba(16,185,129,0.4)]',
-      border: isDark ? 'border-emerald-500/30' : 'border-emerald-100',
-      glow: isDark ? 'rgba(16,185,129,0.12)' : 'rgba(16,185,129,0.05)',
-      valueText: isDark ? 'text-emerald-400' : 'text-emerald-600'
-    }
+    brand: { border: 'border-slate-700/50 hover:border-blue-500/50', glow: 'transparent', val: isDark ? 'text-slate-100' : 'text-slate-900' },
+    rose: { border: 'border-slate-700/50 hover:border-rose-500/50', glow: 'transparent', val: isDark ? 'text-slate-100' : 'text-slate-900' },
+    emerald: { border: 'border-emerald-500/30', glow: isDark ? 'rgba(16,185,129,0.12)' : 'rgba(16,185,129,0.05)', val: isDark ? 'text-emerald-400' : 'text-emerald-600' }
   };
 
   const theme = themes[variant];
@@ -53,52 +38,40 @@ const StatCard: React.FC<StatCardProps> = ({ label, value, icon: Icon, lottieDat
     <div
       onMouseEnter={() => lottieRef.current?.play()}
       onMouseLeave={() => lottieRef.current?.stop()}
-      className={`relative group p-6 sm:p-8 rounded-[1.8rem] sm:rounded-[2.5rem] transition-all duration-500 hover:-translate-y-1 border backdrop-blur-md cursor-default min-h-[180px] sm:min-h-[220px] flex flex-col justify-between ${
+      className={`relative group p-6 sm:p-8 rounded-[2.2rem] transition-all duration-500 hover:-translate-y-1 border backdrop-blur-md overflow-hidden flex flex-col h-[180px] sm:h-[220px] justify-between ${
         isDark ? 'bg-slate-800/40' : 'bg-white shadow-sm hover:shadow-xl'
       } ${theme.border}`}
-      style={{ 
-        boxShadow: variant === 'emerald' ? `0 15px 45px -10px ${theme.glow}` : undefined 
-      }}
+      style={{ boxShadow: variant === 'emerald' ? `0 15px 45px -10px ${theme.glow}` : undefined }}
     >
-      {variant === 'emerald' && (
-        <div className="absolute -right-4 -top-4 w-24 h-24 bg-emerald-500/10 blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-      )}
-
-      <div className="relative z-10 flex flex-col gap-2">
-        
-        {/* Контейнер для иконки/анимации с фиксированной высотой, чтобы ничего не летало */}
-        <div className="h-16 sm:h-20 flex items-center justify-start">
-          <div className={`relative w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center transition-transform duration-500 group-hover:scale-110 ${
-            lottieData ? 'bg-transparent' : theme.icon + ' rounded-2xl shadow-lg'
-          }`}>
+      <div className="relative z-10 flex flex-col h-full justify-between">
+        {/* Контейнер для анимации с фиксированным местом */}
+        <div className="h-20 w-full flex items-center justify-start">
+          <div className="relative w-16 h-16 flex items-center justify-center">
             {lottieData ? (
-              <Lottie 
-                lottieRef={lottieRef}
-                animationData={lottieData} 
-                loop={true} 
-                autoplay={false}
-                // Настраиваем размер и центрирование
-                className="w-28 h-28 sm:w-32 sm:h-32 absolute scale-[1.3] pointer-events-none" 
-              />
+              <div className="absolute inset-0 flex items-center justify-center scale-[1.5] translate-y-[-5%]">
+                <Lottie 
+                  lottieRef={lottieRef}
+                  animationData={lottieData} 
+                  loop={true} 
+                  autoplay={false}
+                  className="w-full h-full pointer-events-none" 
+                />
+              </div>
             ) : (
-              Icon && <Icon size={28} strokeWidth={2.5} />
+              <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-emerald-500 text-white shadow-lg shadow-emerald-500/20">
+                {Icon && <Icon size={28} strokeWidth={2.5} />}
+              </div>
             )}
           </div>
         </div>
 
-        <div className="mt-4 space-y-1">
-          <p className={`text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.15em] ${
-            variant === 'emerald' 
-              ? (isDark ? 'text-emerald-500/70' : 'text-emerald-600/70') 
-              : (isDark ? 'text-slate-500' : 'text-slate-400')
-          }`}>
-            {label}
-          </p>
+        <div className="space-y-1">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">{label}</p>
           <div className="flex items-baseline gap-1.5">
-            <h3 className={`text-2xl sm:text-4xl font-black tracking-tighter tabular-nums ${theme.valueText}`}>
+            <h3 className={`text-2xl sm:text-4xl font-black tracking-tighter tabular-nums ${theme.val}`}>
               {value < 0 ? '-' : ''}{formattedValue}
             </h3>
-            <span className={`text-lg sm:text-2xl font-light opacity-50 ${theme.valueText}`}>₽</span>
+            <span className={`text-lg opacity-50 ${theme.val}`}>₽</span>
           </div>
         </div>
       </div>
@@ -108,48 +81,28 @@ const StatCard: React.FC<StatCardProps> = ({ label, value, icon: Icon, lottieDat
 
 const StatsSection: React.FC<StatsSectionProps> = ({ income, expense, profit, isDark }) => {
   return (
-    <section className={`relative px-6 py-8 sm:p-10 rounded-[2.2rem] sm:rounded-[3rem] border transition-all duration-500 ${
-      isDark 
-        ? 'bg-slate-900/50 border-slate-800/50 backdrop-blur-2xl shadow-xl' 
-        : 'bg-slate-50/50 border-slate-200/60 shadow-sm'
+    <section className={`relative p-6 sm:p-10 rounded-[2.5rem] border transition-all duration-500 ${
+      isDark ? 'bg-slate-900/50 border-slate-800/50 backdrop-blur-2xl shadow-2xl' : 'bg-slate-50/50 border-slate-200/60 shadow-sm'
     }`}>
       
-      <div className="space-y-2 mb-10 sm:mb-12">
+      <div className="space-y-2 mb-10">
         <div className="flex items-center gap-3">
           <div className="flex h-2.5 w-2.5">
-            <span className="animate-[pulse_4s_ease-in-out_infinite] inline-flex h-full w-full rounded-full bg-blue-500/80 shadow-[0_0_10px_rgba(59,130,246,0.4)]"></span>
+            <span className="animate-[pulse_4s_infinite] inline-flex h-full w-full rounded-full bg-blue-500/80 shadow-[0_0_10px_rgba(59,130,246,0.4)]"></span>
           </div>
           <h2 className={`text-xl sm:text-2xl font-black tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
             Ежемесячные итоги
           </h2>
         </div>
-        <p className={`text-xs sm:text-sm font-medium leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+        <p className={`text-xs sm:text-sm font-medium ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
           Выручка, расходы и чистая прибыль за период
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-8">
-        <StatCard
-          label="Выручка"
-          value={income}
-          lottieData={upAnimation}
-          variant="brand"
-          isDark={isDark}
-        />
-        <StatCard
-          label="Расходы"
-          value={expense}
-          lottieData={downAnimation}
-          variant="rose"
-          isDark={isDark}
-        />
-        <StatCard
-          label="Чистая прибыль"
-          value={profit}
-          icon={Landmark}
-          variant="emerald"
-          isDark={isDark}
-        />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <StatCard label="Выручка" value={income} lottieData={upAnimation} variant="brand" isDark={isDark} />
+        <StatCard label="Расходы" value={expense} lottieData={downAnimation} variant="rose" isDark={isDark} />
+        <StatCard label="Чистая прибыль" value={profit} icon={Landmark} variant="emerald" isDark={isDark} />
       </div>
     </section>
   );
