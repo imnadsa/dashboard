@@ -1,9 +1,8 @@
-import React from 'react';
+import React, { useRef } from 'react'; // Добавили useRef
 import { Wallet, Banknote, CreditCard, LucideIcon } from 'lucide-react';
-import Lottie from 'lottie-react';
+import Lottie, { LottieRefApi } from 'lottie-react'; // Добавили тип LottieRefApi
 import { Balances } from '../../types';
 
-// Импорт анимаций
 import firstAnimation from '../../assets/lottie/first.json';
 import cashAnimation from '../../assets/lottie/cash.json';
 import cardAnimation from '../../assets/lottie/card.json';
@@ -24,10 +23,16 @@ interface BalanceCardProps {
 
 const BalanceCard: React.FC<BalanceCardProps> = ({ label, value, icon: Icon, lottieData, isPrimary, isDark }) => {
   const formattedValue = new Intl.NumberFormat('ru-RU').format(value);
+  
+  // Создаем ссылку на управление анимацией
+  const lottieRef = useRef<LottieRefApi | null>(null);
 
   return (
     <div
-      className={`relative group p-6 sm:p-8 rounded-[1.8rem] sm:rounded-[2.5rem] transition-all duration-500 hover:-translate-y-1 ${
+      // УПРАВЛЕНИЕ АНИМАЦИЕЙ ПРИ НАВЕДЕНИИ
+      onMouseEnter={() => lottieRef.current?.play()}
+      onMouseLeave={() => lottieRef.current?.stop()} 
+      className={`relative group p-6 sm:p-8 rounded-[1.8rem] sm:rounded-[2.5rem] transition-all duration-500 hover:-translate-y-1 cursor-default ${
         isPrimary
           ? 'bg-gradient-to-br from-[#4295B0] via-[#3a819b] to-[#2d5a6d] text-white shadow-lg'
           : isDark
@@ -37,19 +42,15 @@ const BalanceCard: React.FC<BalanceCardProps> = ({ label, value, icon: Icon, lot
     >
       <div className="relative z-10 flex flex-col gap-6 sm:gap-8">
         
-        {/* Контейнер для анимации - увеличен и с разрешением на вылет за границы */}
         <div className={`relative w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center transition-transform duration-500 group-hover:scale-110 ${
-          lottieData
-            ? 'bg-transparent' 
-            : isPrimary 
-              ? 'bg-white/20 backdrop-blur-md rounded-2xl shadow-lg' 
-              : 'bg-slate-900/60 text-brand rounded-2xl'
+          lottieData ? 'bg-transparent' : 'bg-slate-900/60 rounded-2xl text-brand'
         }`}>
           {lottieData ? (
             <Lottie 
+              lottieRef={lottieRef} // Привязываем ссылку
               animationData={lottieData} 
               loop={true} 
-              // SCALE [2.0] - анимация будет ОГРОМНОЙ и парить над карточкой
+              autoplay={false} // ОСТАНОВЛЕНО ПО УМОЛЧАНИЮ
               className="w-24 h-24 sm:w-32 sm:h-32 scale-[1.5] pointer-events-none" 
             />
           ) : (
@@ -87,10 +88,8 @@ const BalancesSection: React.FC<BalancesSectionProps> = ({ balances, isDark }) =
         : 'bg-slate-50/50 border-slate-200/60 shadow-sm'
     }`}>
       
-      {/* Шапка блока */}
       <div className="space-y-2 mb-10 sm:mb-12">
         <div className="flex items-center gap-3">
-          {/* Очень медленная и мягкая пульсация для спокойного взгляда */}
           <div className="flex h-2.5 w-2.5">
             <span className="animate-[pulse_4s_ease-in-out_infinite] inline-flex h-full w-full rounded-full bg-emerald-500/80 shadow-[0_0_10px_rgba(16,185,129,0.4)]"></span>
           </div>
@@ -103,7 +102,6 @@ const BalancesSection: React.FC<BalancesSectionProps> = ({ balances, isDark }) =
         </p>
       </div>
 
-      {/* Сетка карточек */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-8">
         <BalanceCard
           label="Всего средств"
