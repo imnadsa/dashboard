@@ -2,7 +2,7 @@ import React, { useRef } from 'react';
 import { ArrowUpRight, ArrowDownRight, Landmark, LucideIcon } from 'lucide-react';
 import Lottie from 'lottie-react';
 
-// Импорт анимаций (убедись, что файлы лежат в assets/lottie/)
+// Импорт анимаций
 import upAnimation from '../../assets/lottie/up.json';
 import downAnimation from '../../assets/lottie/down.json';
 
@@ -24,21 +24,19 @@ interface StatCardProps {
 
 const StatCard: React.FC<StatCardProps> = ({ label, value, icon: Icon, lottieData, variant, isDark }) => {
   const formattedValue = new Intl.NumberFormat('ru-RU').format(Math.abs(value));
-  
-  // Реф для управления анимацией с типом any для обхода ошибок TS
   const lottieRef = useRef<any>(null);
 
   const themes = {
     brand: {
       icon: 'bg-blue-500 text-white',
       border: isDark ? 'border-slate-700/50 hover:border-blue-500/50' : 'border-slate-100 hover:border-blue-200',
-      glow: 'transparent', // Обязательно для TS
+      glow: 'transparent',
       valueText: isDark ? 'text-slate-100' : 'text-slate-900'
     },
     rose: {
       icon: 'bg-rose-500 text-white',
       border: isDark ? 'border-slate-700/50 hover:border-rose-500/50' : 'border-slate-100 hover:border-rose-200',
-      glow: 'transparent', // Обязательно для TS
+      glow: 'transparent',
       valueText: isDark ? 'text-slate-100' : 'text-slate-900'
     },
     emerald: {
@@ -55,7 +53,7 @@ const StatCard: React.FC<StatCardProps> = ({ label, value, icon: Icon, lottieDat
     <div
       onMouseEnter={() => lottieRef.current?.play()}
       onMouseLeave={() => lottieRef.current?.stop()}
-      className={`relative group p-6 sm:p-8 rounded-[1.8rem] sm:rounded-[2.5rem] transition-all duration-500 hover:-translate-y-1 border backdrop-blur-md cursor-default ${
+      className={`relative group p-6 sm:p-8 rounded-[1.8rem] sm:rounded-[2.5rem] transition-all duration-500 hover:-translate-y-1 border backdrop-blur-md cursor-default min-h-[180px] sm:min-h-[220px] flex flex-col justify-between ${
         isDark ? 'bg-slate-800/40' : 'bg-white shadow-sm hover:shadow-xl'
       } ${theme.border}`}
       style={{ 
@@ -66,26 +64,29 @@ const StatCard: React.FC<StatCardProps> = ({ label, value, icon: Icon, lottieDat
         <div className="absolute -right-4 -top-4 w-24 h-24 bg-emerald-500/10 blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
       )}
 
-      <div className="relative z-10 flex flex-col gap-6 sm:gap-8">
+      <div className="relative z-10 flex flex-col gap-2">
         
-        {/* Иконка или Lottie */}
-        <div className={`relative w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center transition-transform duration-500 group-hover:scale-110 ${
-          lottieData ? 'bg-transparent' : theme.icon + ' rounded-2xl shadow-lg'
-        }`}>
-          {lottieData ? (
-            <Lottie 
-              lottieRef={lottieRef}
-              animationData={lottieData} 
-              loop={true} 
-              autoplay={false}
-              className="w-24 h-24 sm:w-32 sm:h-32 scale-[1.5] pointer-events-none" 
-            />
-          ) : (
-            Icon && <Icon size={28} strokeWidth={2.5} />
-          )}
+        {/* Контейнер для иконки/анимации с фиксированной высотой, чтобы ничего не летало */}
+        <div className="h-16 sm:h-20 flex items-center justify-start">
+          <div className={`relative w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center transition-transform duration-500 group-hover:scale-110 ${
+            lottieData ? 'bg-transparent' : theme.icon + ' rounded-2xl shadow-lg'
+          }`}>
+            {lottieData ? (
+              <Lottie 
+                lottieRef={lottieRef}
+                animationData={lottieData} 
+                loop={true} 
+                autoplay={false}
+                // Настраиваем размер и центрирование
+                className="w-28 h-28 sm:w-32 sm:h-32 absolute scale-[1.3] pointer-events-none" 
+              />
+            ) : (
+              Icon && <Icon size={28} strokeWidth={2.5} />
+            )}
+          </div>
         </div>
 
-        <div className="space-y-1 sm:space-y-2">
+        <div className="mt-4 space-y-1">
           <p className={`text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.15em] ${
             variant === 'emerald' 
               ? (isDark ? 'text-emerald-500/70' : 'text-emerald-600/70') 
