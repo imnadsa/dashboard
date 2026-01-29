@@ -1,11 +1,13 @@
 import React from 'react';
-import { Moon, Sun, ChevronDown, LogOut } from 'lucide-react';
+import { Moon, Sun, ChevronDown } from 'lucide-react';
 
 interface HeaderProps {
   clientName: string;
   selectedMonth: string;
+  selectedYear: number;
   months: string[];
   onMonthChange: (month: string) => void;
+  onYearChange: (year: number) => void;
   isDark: boolean;
   onThemeToggle: () => void;
   lastUpdated: Date | null;
@@ -15,8 +17,10 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({
   clientName,
   selectedMonth,
+  selectedYear,
   months,
   onMonthChange,
+  onYearChange,
   isDark,
   onThemeToggle,
   lastUpdated,
@@ -51,6 +55,36 @@ const Header: React.FC<HeaderProps> = ({
             {isDark ? <Sun size={18} /> : <Moon size={18} />}
           </button>
 
+          {/* Year Toggle */}
+          <div className={`flex gap-1 p-1 rounded-xl ${
+            isDark ? 'bg-slate-800' : 'bg-slate-100'
+          }`}>
+            <button
+              onClick={() => onYearChange(2025)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                selectedYear === 2025
+                  ? 'bg-brand text-white shadow-md'
+                  : isDark
+                    ? 'text-slate-400 hover:text-slate-300'
+                    : 'text-slate-500 hover:text-slate-700'
+              }`}
+            >
+              2025
+            </button>
+            <button
+              onClick={() => onYearChange(2026)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                selectedYear === 2026
+                  ? 'bg-brand text-white shadow-md'
+                  : isDark
+                    ? 'text-slate-400 hover:text-slate-300'
+                    : 'text-slate-500 hover:text-slate-700'
+              }`}
+            >
+              2026
+            </button>
+          </div>
+
           {/* Month Selector */}
           <div className="relative">
             <select
@@ -80,9 +114,6 @@ const Header: React.FC<HeaderProps> = ({
               </span>
             </div>
           )}
-
-          {/* Logout */}
-          
         </div>
       </div>
     </header>
