@@ -49,25 +49,33 @@ export const parseSummaryCSV = (csv: string): DashboardData => {
   if (lines.length < 10) return defaultData;
 
   // Заголовки с месяцами
-  const monthHeaders = getCells(lines[0]);
-  const monthNames: string[] = [];
-  for (let i = 1; i <= 12; i++) {
-    const monthName = normalizeMonth(monthHeaders[i]);
-    if (monthName) monthNames.push(monthName);
-  }
+  const monthNames2025: string[] = ['январь', 'февраль', 'март', 'апрель', 'май', 'июнь', 
+                                     'июль', 'август', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь'];
 
   // Строки 2-4: Выручка, Расходы, Прибыль
   const incomeRow = getCells(lines[1]);
   const expenseRow = getCells(lines[2]);
   const deltaRow = getCells(lines[3]);
 
-  for (let i = 0; i < monthNames.length && i < 12; i++) {
-    const colIdx = i + 1;
+  // 2025 год (колонки 1-12)
+  for (let i = 1; i <= 12; i++) {
     defaultData.monthly.push({
-      month: monthNames[i],
-      income: cleanNum(incomeRow[colIdx]),
-      expense: cleanNum(expenseRow[colIdx]),
-      delta: cleanNum(deltaRow[colIdx]),
+      month: monthNames2025[i - 1],
+      year: 2025,
+      income: cleanNum(incomeRow[i]),
+      expense: cleanNum(expenseRow[i]),
+      delta: cleanNum(deltaRow[i]),
+    });
+  }
+
+  // 2026 год (колонки 13-24)
+  for (let i = 13; i <= 24; i++) {
+    defaultData.monthly.push({
+      month: monthNames2025[i - 13],
+      year: 2026,
+      income: cleanNum(incomeRow[i]),
+      expense: cleanNum(expenseRow[i]),
+      delta: cleanNum(deltaRow[i]),
     });
   }
 
@@ -79,17 +87,32 @@ export const parseSummaryCSV = (csv: string): DashboardData => {
     
     if (!categoryName || categoryName.includes('доходы по категориям')) continue;
     
+    // 2025 год (колонки 1-12)
     for (let colIdx = 1; colIdx <= 12; colIdx++) {
-      if (colIdx - 1 >= monthNames.length) break;
-      const monthName = monthNames[colIdx - 1];
+      const monthName = monthNames2025[colIdx - 1];
       const amount = cleanNum(row[colIdx]);
       
       if (amount === 0) continue;
       
-      if (!defaultData.detailedIncome[monthName]) {
-        defaultData.detailedIncome[monthName] = [];
+      const key = `2025-${monthName}`;
+      if (!defaultData.detailedIncome[key]) {
+        defaultData.detailedIncome[key] = [];
       }
-      defaultData.detailedIncome[monthName].push({ name: categoryName, amount });
+      defaultData.detailedIncome[key].push({ name: categoryName, amount });
+    }
+    
+    // 2026 год (колонки 13-24)
+    for (let colIdx = 13; colIdx <= 24; colIdx++) {
+      const monthName = monthNames2025[colIdx - 13];
+      const amount = cleanNum(row[colIdx]);
+      
+      if (amount === 0) continue;
+      
+      const key = `2026-${monthName}`;
+      if (!defaultData.detailedIncome[key]) {
+        defaultData.detailedIncome[key] = [];
+      }
+      defaultData.detailedIncome[key].push({ name: categoryName, amount });
     }
   }
 
@@ -101,17 +124,32 @@ export const parseSummaryCSV = (csv: string): DashboardData => {
     
     if (!categoryName || categoryName.includes('расходы по категориям')) continue;
     
+    // 2025 год (колонки 1-12)
     for (let colIdx = 1; colIdx <= 12; colIdx++) {
-      if (colIdx - 1 >= monthNames.length) break;
-      const monthName = monthNames[colIdx - 1];
+      const monthName = monthNames2025[colIdx - 1];
       const amount = cleanNum(row[colIdx]);
       
       if (amount === 0) continue;
       
-      if (!defaultData.detailedExpenses[monthName]) {
-        defaultData.detailedExpenses[monthName] = [];
+      const key = `2025-${monthName}`;
+      if (!defaultData.detailedExpenses[key]) {
+        defaultData.detailedExpenses[key] = [];
       }
-      defaultData.detailedExpenses[monthName].push({ name: categoryName, amount });
+      defaultData.detailedExpenses[key].push({ name: categoryName, amount });
+    }
+    
+    // 2026 год (колонки 13-24)
+    for (let colIdx = 13; colIdx <= 24; colIdx++) {
+      const monthName = monthNames2025[colIdx - 13];
+      const amount = cleanNum(row[colIdx]);
+      
+      if (amount === 0) continue;
+      
+      const key = `2026-${monthName}`;
+      if (!defaultData.detailedExpenses[key]) {
+        defaultData.detailedExpenses[key] = [];
+      }
+      defaultData.detailedExpenses[key].push({ name: categoryName, amount });
     }
   }
 
@@ -121,11 +159,24 @@ export const parseSummaryCSV = (csv: string): DashboardData => {
     const avgExpenseRow = getCells(lines[46]);
     const avgProfitRow = getCells(lines[47]);
 
+    // 2025 год (колонки 1-12)
     for (let colIdx = 1; colIdx <= 12; colIdx++) {
-      if (colIdx - 1 >= monthNames.length) break;
-      const monthName = monthNames[colIdx - 1];
+      const monthName = monthNames2025[colIdx - 1];
+      const key = `2025-${monthName}`;
       
-      defaultData.dailyAverages[monthName] = {
+      defaultData.dailyAverages[key] = {
+        revenue: cleanNum(avgRevenueRow[colIdx]),
+        expense: cleanNum(avgExpenseRow[colIdx]),
+        profit: cleanNum(avgProfitRow[colIdx])
+      };
+    }
+    
+    // 2026 год (колонки 13-24)
+    for (let colIdx = 13; colIdx <= 24; colIdx++) {
+      const monthName = monthNames2025[colIdx - 13];
+      const key = `2026-${monthName}`;
+      
+      defaultData.dailyAverages[key] = {
         revenue: cleanNum(avgRevenueRow[colIdx]),
         expense: cleanNum(avgExpenseRow[colIdx]),
         profit: cleanNum(avgProfitRow[colIdx])
@@ -133,9 +184,9 @@ export const parseSummaryCSV = (csv: string): DashboardData => {
     }
 
     defaultData.yearlyAverages = {
-      revenue: cleanNum(avgRevenueRow[13]),
-      expense: cleanNum(avgExpenseRow[13]),
-      profit: cleanNum(avgProfitRow[13])
+      revenue: cleanNum(avgRevenueRow[25]),
+      expense: cleanNum(avgExpenseRow[25]),
+      profit: cleanNum(avgProfitRow[25])
     };
   }
 
@@ -156,12 +207,6 @@ export const parseSummaryCSV = (csv: string): DashboardData => {
   if (lines.length >= 90) {
     const dailyHeaderRow = getCells(lines[59]);
     
-    const dailyMonthNames: string[] = [];
-    for (let i = 1; i <= 12; i++) {
-      const monthName = normalizeMonth(dailyHeaderRow[i]);
-      if (monthName) dailyMonthNames.push(monthName);
-    }
-    
     for (let dayIdx = 1; dayIdx <= 31; dayIdx++) {
       const lineIdx = 59 + dayIdx;
       if (!lines[lineIdx]) continue;
@@ -170,15 +215,28 @@ export const parseSummaryCSV = (csv: string): DashboardData => {
       const dayNum = parseInt(row[0]);
       if (isNaN(dayNum)) continue;
       
+      // 2025 год (колонки 1-12)
       for (let colIdx = 1; colIdx <= 12; colIdx++) {
-        if (colIdx - 1 >= dailyMonthNames.length) break;
-        const monthName = dailyMonthNames[colIdx - 1];
+        const monthName = monthNames2025[colIdx - 1];
         const amount = cleanNum(row[colIdx]);
+        const key = `2025-${monthName}`;
         
-        if (!defaultData.dailyIncome[monthName]) {
-          defaultData.dailyIncome[monthName] = [];
+        if (!defaultData.dailyIncome[key]) {
+          defaultData.dailyIncome[key] = [];
         }
-        defaultData.dailyIncome[monthName].push({ day: dayNum, amount });
+        defaultData.dailyIncome[key].push({ day: dayNum, amount });
+      }
+      
+      // 2026 год (колонки 13-24)
+      for (let colIdx = 13; colIdx <= 24; colIdx++) {
+        const monthName = monthNames2025[colIdx - 13];
+        const amount = cleanNum(row[colIdx]);
+        const key = `2026-${monthName}`;
+        
+        if (!defaultData.dailyIncome[key]) {
+          defaultData.dailyIncome[key] = [];
+        }
+        defaultData.dailyIncome[key].push({ day: dayNum, amount });
       }
     }
   }
