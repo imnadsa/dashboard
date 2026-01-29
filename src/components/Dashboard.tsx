@@ -31,7 +31,23 @@ const Dashboard: React.FC<DashboardProps> = ({ clientName, csvUrl, onLogout }) =
   // Set initial month when data loads
   useEffect(() => {
     if (data.monthly.length > 0 && !selectedMonth) {
-      setSelectedMonth(data.monthly[data.monthly.length - 1].month);
+      // Получаем текущий месяц
+      const currentDate = new Date();
+      const monthNames = [
+        'январь', 'февраль', 'март', 'апрель', 'май', 'июнь',
+        'июль', 'август', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь'
+      ];
+      const currentMonthName = monthNames[currentDate.getMonth()];
+      
+      // Проверяем, есть ли текущий месяц в данных
+      const currentMonthExists = data.monthly.some(d => d.month === currentMonthName);
+      
+      // Если текущий месяц есть в данных, выбираем его, иначе последний доступный
+      if (currentMonthExists) {
+        setSelectedMonth(currentMonthName);
+      } else {
+        setSelectedMonth(data.monthly[data.monthly.length - 1].month);
+      }
     }
   }, [data.monthly, selectedMonth]);
 
