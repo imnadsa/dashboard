@@ -17,6 +17,7 @@ export interface AuthState {
 
 export interface SummaryData {
   month: string;
+  year: number;
   income: number;
   expense: number;
   delta: number;
