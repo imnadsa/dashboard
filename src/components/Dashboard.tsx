@@ -24,7 +24,7 @@ const Dashboard: React.FC<DashboardProps> = ({ clientName, csvUrl, onLogout }) =
   const [selectedYear, setSelectedYear] = useState<number>(2026);
   const [isDark, setIsDark] = useState(() => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('theme') === 'dark';
+      return localStorage.getItem('theme') !== 'light';
     }
     return true;
   });
