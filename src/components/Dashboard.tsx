@@ -21,6 +21,7 @@ interface DashboardProps {
 const Dashboard: React.FC<DashboardProps> = ({ clientName, csvUrl, onLogout }) => {
   const { data, isLoading, lastUpdated } = useDashboardData(csvUrl);
   const [selectedMonth, setSelectedMonth] = useState<string>('');
+  const [selectedYear, setSelectedYear] = useState<number>(2026);
   const [isDark, setIsDark] = useState(() => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('theme') === 'dark';
@@ -28,25 +29,39 @@ const Dashboard: React.FC<DashboardProps> = ({ clientName, csvUrl, onLogout }) =
     return true;
   });
 
-  // Set initial month when data loads
+  // Set initial month and year when data loads
   useEffect(() => {
     if (data.monthly.length > 0 && !selectedMonth) {
-      // Получаем текущий месяц
+      // Получаем текущий месяц и год
       const currentDate = new Date();
+      const currentYear = currentDate.getFullYear();
       const monthNames = [
         'январь', 'февраль', 'март', 'апрель', 'май', 'июнь',
         'июль', 'август', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь'
       ];
       const currentMonthName = monthNames[currentDate.getMonth()];
       
-      // Проверяем, есть ли текущий месяц в данных
-      const currentMonthExists = data.monthly.some(d => d.month === currentMonthName);
+      // Устанавливаем текущий год
+      setSelectedYear(currentYear);
       
-      // Если текущий месяц есть в данных, выбираем его, иначе последний доступный
+      // Проверяем, есть ли текущий месяц в данных для текущего года
+      const currentMonthExists = data.monthly.some(
+        d => d.month === currentMonthName && d.year === currentYear
+      );
+      
+      // Если текущий месяц есть в данных для текущего года, выбираем его
       if (currentMonthExists) {
         setSelectedMonth(currentMonthName);
       } else {
-        setSelectedMonth(data.monthly[data.monthly.length - 1].month);
+        // Иначе выбираем последний доступный месяц для текущего года
+        const currentYearData = data.monthly.filter(d => d.year === currentYear);
+        if (currentYearData.length > 0) {
+          setSelectedMonth(currentYearData[currentYearData.length - 1].month);
+        } else {
+          // Если нет данных для текущего года, берём последний месяц из всех данных
+          setSelectedMonth(data.monthly[data.monthly.length - 1].month);
+          setSelectedYear(data.monthly[data.monthly.length - 1].year);
+        }
       }
     }
   }, [data.monthly, selectedMonth]);
@@ -64,30 +79,46 @@ const Dashboard: React.FC<DashboardProps> = ({ clientName, csvUrl, onLogout }) =
     }
   }, [isDark]);
 
-  // Computed values
+  // Computed values - filter by selected year
+  const months = useMemo(() => {
+    const filtered = data.monthly.filter(d => d.year === selectedYear);
+    return filtered.map(d => d.month);
+  }, [data.monthly, selectedYear]);
+
+  // Preserve month when switching years
+  useEffect(() => {
+    if (months.length > 0 && selectedMonth) {
+      // Проверяем, есть ли выбранный месяц в новом году
+      if (!months.includes(selectedMonth)) {
+        // Если нет - выбираем первый доступный
+        setSelectedMonth(months[0]);
+      }
+    }
+  }, [selectedYear, months, selectedMonth]);
+
   const currentStats = useMemo(() => {
-    return data.monthly.find(d => d.month === selectedMonth) || null;
-  }, [data.monthly, selectedMonth]);
+    return data.monthly.find(d => d.month === selectedMonth && d.year === selectedYear) || null;
+  }, [data.monthly, selectedMonth, selectedYear]);
 
   const currentDailyAvg = useMemo(() => {
-    return data.dailyAverages[selectedMonth] || { revenue: 0, expense: 0, profit: 0 };
-  }, [data.dailyAverages, selectedMonth]);
+    const key = `${selectedYear}-${selectedMonth}`;
+    return data.dailyAverages[key] || { revenue: 0, expense: 0, profit: 0 };
+  }, [data.dailyAverages, selectedMonth, selectedYear]);
 
   const currentExpenses = useMemo(() => {
-    return data.detailedExpenses[selectedMonth] || [];
-  }, [data.detailedExpenses, selectedMonth]);
+    const key = `${selectedYear}-${selectedMonth}`;
+    return data.detailedExpenses[key] || [];
+  }, [data.detailedExpenses, selectedMonth, selectedYear]);
 
   const currentIncome = useMemo(() => {
-    return data.detailedIncome[selectedMonth] || [];
-  }, [data.detailedIncome, selectedMonth]);
+    const key = `${selectedYear}-${selectedMonth}`;
+    return data.detailedIncome[key] || [];
+  }, [data.detailedIncome, selectedMonth, selectedYear]);
 
   const currentDailyIncome = useMemo(() => {
-    return data.dailyIncome[selectedMonth] || [];
-  }, [data.dailyIncome, selectedMonth]);
-
-  const months = useMemo(() => {
-    return data.monthly.map(d => d.month);
-  }, [data.monthly]);
+    const key = `${selectedYear}-${selectedMonth}`;
+    return data.dailyIncome[key] || [];
+  }, [data.dailyIncome, selectedMonth, selectedYear]);
 
   if (isLoading && data.monthly.length === 0) {
     return (
@@ -109,8 +140,10 @@ const Dashboard: React.FC<DashboardProps> = ({ clientName, csvUrl, onLogout }) =
       <Header
         clientName={clientName}
         selectedMonth={selectedMonth}
+        selectedYear={selectedYear}
         months={months}
         onMonthChange={setSelectedMonth}
+        onYearChange={setSelectedYear}
         isDark={isDark}
         onThemeToggle={() => setIsDark(!isDark)}
         lastUpdated={lastUpdated}
@@ -134,7 +167,7 @@ const Dashboard: React.FC<DashboardProps> = ({ clientName, csvUrl, onLogout }) =
 
         {/* Profit Chart */}
         <ProfitChart
-          data={data.monthly}
+          data={data.monthly.filter(d => d.year === selectedYear)}
           selectedMonth={selectedMonth}
           onMonthSelect={setSelectedMonth}
           isDark={isDark}
