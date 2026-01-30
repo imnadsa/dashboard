@@ -40,7 +40,7 @@ export const useAuth = () => {
   }, []);
 
   // Логин
-  const login = async (inputSlug: string, password: string) => {
+  const login = async (inputSlug: string, password: string): Promise<boolean> => {
     setIsLoading(true);
     setError(null);
 
@@ -62,7 +62,7 @@ export const useAuth = () => {
       if (!data.success) {
         setError(data.error || 'Ошибка авторизации');
         setIsLoading(false);
-        return;
+        return false;
       }
 
       // Сохраняем данные включая slug
@@ -79,10 +79,12 @@ export const useAuth = () => {
       setSlug(authData.slug);  // ← ДОБАВИЛИ
       setIsAuthenticated(true);
       setIsLoading(false);
+      return true;
     } catch (err) {
       console.error('Login error:', err);
       setError('Ошибка подключения к серверу');
       setIsLoading(false);
+      return false;
     }
   };
 
