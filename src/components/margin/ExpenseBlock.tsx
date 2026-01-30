@@ -307,7 +307,7 @@ const ExpenseRow: React.FC<ExpenseRowProps> = ({
           <input
             type="text"
             inputMode="decimal"
-            value={percent > 0 ? percent.toFixed(2) : ''}
+            value={percent || ''}
             onChange={(e) => {
               const val = e.target.value.replace(/[^0-9.,]/g, '').replace(',', '.');
               const num = parseFloat(val);
