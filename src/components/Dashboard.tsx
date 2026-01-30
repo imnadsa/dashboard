@@ -16,18 +16,20 @@ interface DashboardProps {
   clientName: string;
   csvUrl: string;
   onLogout: () => void;
+  isDark: boolean;           // ← ДОБАВИЛ
+  onThemeToggle: () => void; // ← ДОБАВИЛ
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ clientName, csvUrl, onLogout }) => {
+const Dashboard: React.FC<DashboardProps> = ({ 
+  clientName, 
+  csvUrl, 
+  onLogout,
+  isDark,        // ← ДОБАВИЛ
+  onThemeToggle  // ← ДОБАВИЛ
+}) => {
   const { data, isLoading, lastUpdated } = useDashboardData(csvUrl);
   const [selectedMonth, setSelectedMonth] = useState<string>('');
   const [selectedYear, setSelectedYear] = useState<number>(2026);
-  const [isDark, setIsDark] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('theme') !== 'light';
-    }
-    return true;
-  });
 
   // Set initial month and year when data loads
   useEffect(() => {
@@ -145,7 +147,7 @@ const Dashboard: React.FC<DashboardProps> = ({ clientName, csvUrl, onLogout }) =
         onMonthChange={setSelectedMonth}
         onYearChange={setSelectedYear}
         isDark={isDark}
-        onThemeToggle={() => setIsDark(!isDark)}
+        onThemeToggle={onThemeToggle}
         lastUpdated={lastUpdated}
         onLogout={onLogout}
       />
