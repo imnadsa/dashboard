@@ -290,7 +290,7 @@ const ExpenseRow: React.FC<ExpenseRowProps> = ({
               isDark
                 ? 'bg-slate-600 text-slate-100 border-slate-500'
                 : 'bg-white text-slate-800 border-slate-300'
-            } border focus:outline-none focus:ring-2 focus:ring-brand/30`}
+            } border focus:outline-none focus:ring-2 focus:ring-brand/30 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
             placeholder="0"
             min="0"
             step="0.01"
@@ -305,18 +305,24 @@ const ExpenseRow: React.FC<ExpenseRowProps> = ({
             Проценты
           </label>
           <input
-            type="number"
-            value={percent ? percent.toFixed(2) : ''}
-            onChange={(e) => onChangePercent(parseFloat(e.target.value) || 0)}
+            type="text"
+            inputMode="decimal"
+            value={percent > 0 ? percent.toFixed(2) : ''}
+            onChange={(e) => {
+              const val = e.target.value.replace(/[^0-9.,]/g, '').replace(',', '.');
+              const num = parseFloat(val);
+              if (!isNaN(num) && num >= 0 && num <= 100) {
+                onChangePercent(num);
+              } else if (val === '' || val === '.') {
+                onChangePercent(0);
+              }
+            }}
             className={`w-full px-3 py-2 rounded-lg text-sm ${
               isDark
                 ? 'bg-slate-600 text-slate-100 border-slate-500'
                 : 'bg-white text-slate-800 border-slate-300'
             } border focus:outline-none focus:ring-2 focus:ring-brand/30`}
-            placeholder="0"
-            min="0"
-            max="100"
-            step="0.01"
+            placeholder=""
           />
         </div>
       </div>
