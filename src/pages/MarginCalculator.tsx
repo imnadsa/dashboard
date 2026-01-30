@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useMarginCalculator } from '../hooks/useMarginCalculator';
 import { ServicesList, ServiceCalculator } from '../components/margin';
 
 interface MarginCalculatorProps {
   isDark: boolean;
+  clientSlug: string;  // ← ДОБАВИЛ
 }
 
-const MarginCalculator: React.FC<MarginCalculatorProps> = ({ isDark }) => {
+const MarginCalculator: React.FC<MarginCalculatorProps> = ({ isDark, clientSlug }) => {
   const {
     services,
     selectedService,
@@ -15,7 +16,37 @@ const MarginCalculator: React.FC<MarginCalculatorProps> = ({ isDark }) => {
     createService,
     updateService,
     deleteService,
-  } = useMarginCalculator();
+    isLoading,
+    error,
+  } = useMarginCalculator(clientSlug);  // ← ПЕРЕДАЁМ clientSlug
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-brand/30 border-t-brand rounded-full animate-spin mx-auto mb-4" />
+          <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+            Загрузка услуг...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 rounded-full bg-rose-500/10 flex items-center justify-center mx-auto mb-4">
+            <span className="text-3xl">⚠️</span>
+          </div>
+          <p className={`text-sm ${isDark ? 'text-rose-400' : 'text-rose-600'}`}>
+            {error}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`min-h-screen transition-colors duration-300 pb-20 ${
