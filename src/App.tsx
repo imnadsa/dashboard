@@ -9,7 +9,7 @@ import SvgGradients from './components/ui/SvgGradients';
 type Tab = 'dashboard' | 'calculator';
 
 const App: React.FC = () => {
-  const { isAuthenticated, isLoading, clientName, csvUrl, error, login, logout } = useAuth();
+  const { isAuthenticated, isLoading, clientName, csvUrl, slug, error, login, logout } = useAuth();  // ← ДОБАВИЛ slug
   const [currentTab, setCurrentTab] = useState<Tab>('dashboard');
   const [isDark, setIsDark] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -18,12 +18,6 @@ const App: React.FC = () => {
     }
     return true;
   });
-
-  // Получаем slug из URL (для Supabase)
-  const clientSlug = React.useMemo(() => {
-    const params = new URLSearchParams(window.location.search);
-    return params.get('slug') || '';
-  }, []);
 
   // Apply theme
   React.useEffect(() => {
@@ -66,7 +60,7 @@ const App: React.FC = () => {
           onThemeToggle={() => setIsDark(!isDark)}
         />
       ) : (
-        <MarginCalculator isDark={isDark} clientSlug={clientSlug} />
+        <MarginCalculator isDark={isDark} clientSlug={slug || ''} />  {/* ← ИЗМЕНИЛ: использую slug из useAuth */}
       )}
     </div>
   );
