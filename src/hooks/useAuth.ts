@@ -1,109 +1,104 @@
-import { useState, useEffect } from 'react';
+import { useState, useCallback } from 'react';
+import { supabase } from '../lib/supabase';
+import { AuthResponse, AuthState } from '../types';
 
-const AUTH_STORAGE_KEY = 'auth_data';
-
-interface AuthData {
-  clientName: string;
-  csvUrl: string;
-  slug: string;  // ← ДОБАВИЛИ
-}
+const STORAGE_KEYS = {
+  AUTH_TOKEN: 'dashboard_auth_token',
+  CLIENT_NAME: 'dashboard_client_name',
+  CSV_URL: 'dashboard_csv_url',
+  SLUG: 'dashboard_slug',
+};
 
 export const useAuth = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [clientName, setClientName] = useState<string | null>(null);
-  const [csvUrl, setCsvUrl] = useState<string | null>(null);
-  const [slug, setSlug] = useState<string | null>(null);  // ← ДОБАВИЛИ
-  const [error, setError] = useState<string | null>(null);
+  const [state, setState] = useState<AuthState>(() => {
+    // Check saved session
+    const savedToken = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
+    const savedName = localStorage.getItem(STORAGE_KEYS.CLIENT_NAME);
+    const savedCsvUrl = localStorage.getItem(STORAGE_KEYS.CSV_URL);
+    const savedSlug = localStorage.getItem(STORAGE_KEYS.SLUG);  // ← ДОБАВИЛ
 
-  // Проверяем сохранённую сессию при загрузке
-  useEffect(() => {
-    const checkAuth = () => {
-      try {
-        const stored = localStorage.getItem(AUTH_STORAGE_KEY);
-        if (stored) {
-          const data: AuthData = JSON.parse(stored);
-          setClientName(data.clientName);
-          setCsvUrl(data.csvUrl);
-          setSlug(data.slug);  // ← ДОБАВИЛИ
-          setIsAuthenticated(true);
-        }
-      } catch (err) {
-        console.error('Error reading auth data:', err);
-        localStorage.removeItem(AUTH_STORAGE_KEY);
-      } finally {
-        setIsLoading(false);
-      }
+    if (savedToken && savedName && savedCsvUrl) {
+      return {
+        isAuthenticated: true,
+        isLoading: false,
+        clientName: savedName,
+        csvUrl: savedCsvUrl,
+        slug: savedSlug,  // ← ДОБАВИЛ
+        error: null,
+      };
+    }
+
+    return {
+      isAuthenticated: false,
+      isLoading: false,
+      clientName: null,
+      csvUrl: null,
+      slug: null,  // ← ДОБАВИЛ
+      error: null,
     };
+  });
 
-    checkAuth();
-  }, []);
-
-  // Логин
-  const login = async (inputSlug: string, password: string): Promise<boolean> => {
-    setIsLoading(true);
-    setError(null);
+  const login = useCallback(async (slug: string, password: string): Promise<boolean> => {
+    setState(prev => ({ ...prev, isLoading: true, error: null }));
 
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/verify-password`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
-          },
-          body: JSON.stringify({ slug: inputSlug, password }),
-        }
-      );
+      const { data, error } = await supabase.functions.invoke<AuthResponse>('verify-password', {
+        body: { slug, password }
+      });
 
-      const data = await response.json();
-
-      if (!data.success) {
-        setError(data.error || 'Ошибка авторизации');
-        setIsLoading(false);
+      if (error || !data?.success) {
+        setState(prev => ({
+          ...prev,
+          isLoading: false,
+          error: data?.error || 'Ошибка авторизации'
+        }));
         return false;
       }
 
-      // Сохраняем данные включая slug
-      const authData: AuthData = {
-        clientName: data.client.name,
-        csvUrl: data.client.csv_url,
-        slug: data.client.slug,  // ← ДОБАВИЛИ
-      };
+      // Save to localStorage
+      localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, `${slug}_${Date.now()}`);
+      localStorage.setItem(STORAGE_KEYS.SLUG, slug);
+      localStorage.setItem(STORAGE_KEYS.CLIENT_NAME, data.client!.name);
+      localStorage.setItem(STORAGE_KEYS.CSV_URL, data.client!.csv_url);
 
-      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(authData));
-      
-      setClientName(authData.clientName);
-      setCsvUrl(authData.csvUrl);
-      setSlug(authData.slug);  // ← ДОБАВИЛИ
-      setIsAuthenticated(true);
-      setIsLoading(false);
+      setState({
+        isAuthenticated: true,
+        isLoading: false,
+        clientName: data.client!.name,
+        csvUrl: data.client!.csv_url,
+        slug: slug,  // ← ДОБАВИЛ
+        error: null,
+      });
+
       return true;
     } catch (err) {
-      console.error('Login error:', err);
-      setError('Ошибка подключения к серверу');
-      setIsLoading(false);
+      setState(prev => ({
+        ...prev,
+        isLoading: false,
+        error: 'Ошибка соединения с сервером'
+      }));
       return false;
     }
-  };
+  }, []);
 
-  // Логаут
-  const logout = () => {
-    localStorage.removeItem(AUTH_STORAGE_KEY);
-    setIsAuthenticated(false);
-    setClientName(null);
-    setCsvUrl(null);
-    setSlug(null);  // ← ДОБАВИЛИ
-  };
+  const logout = useCallback(() => {
+    localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
+    localStorage.removeItem(STORAGE_KEYS.SLUG);
+    localStorage.removeItem(STORAGE_KEYS.CLIENT_NAME);
+    localStorage.removeItem(STORAGE_KEYS.CSV_URL);
+
+    setState({
+      isAuthenticated: false,
+      isLoading: false,
+      clientName: null,
+      csvUrl: null,
+      slug: null,  // ← ДОБАВИЛ
+      error: null,
+    });
+  }, []);
 
   return {
-    isAuthenticated,
-    isLoading,
-    clientName,
-    csvUrl,
-    slug,  // ← ДОБАВИЛИ в возврат
-    error,
+    ...state,
     login,
     logout,
   };
