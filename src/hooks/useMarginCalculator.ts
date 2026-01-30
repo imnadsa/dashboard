@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { MarginService, ServiceExpenses } from '../types/margin';
 import { supabase } from '../lib/supabase';
 
@@ -14,6 +14,10 @@ export const useMarginCalculator = (clientSlug: string) => {
   const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Для debounce сохранения
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Загрузка услуг из Supabase
   const loadServices = useCallback(async () => {
@@ -47,7 +51,6 @@ export const useMarginCalculator = (clientSlug: string) => {
 
         setServices(mappedServices);
         
-        // Автоматически выбираем первую услугу
         if (mappedServices.length > 0 && !selectedServiceId) {
           setSelectedServiceId(mappedServices[0].id);
         }
@@ -60,10 +63,40 @@ export const useMarginCalculator = (clientSlug: string) => {
     }
   }, [clientSlug, selectedServiceId]);
 
-  // Загрузка при монтировании
   useEffect(() => {
     loadServices();
   }, [loadServices]);
+
+  // Функция сохранения в Supabase с debounce
+  const saveToSupabase = useCallback(async (id: string, updates: Partial<MarginService>) => {
+    if (!clientSlug) return;
+
+    setIsSaving(true);
+
+    const supabaseUpdates: any = {};
+    if (updates.name !== undefined) supabaseUpdates.name = updates.name;
+    if (updates.currentPrice !== undefined) supabaseUpdates.current_price = updates.currentPrice;
+    if (updates.expenses !== undefined) supabaseUpdates.expenses = updates.expenses;
+    supabaseUpdates.updated_at = new Date().toISOString();
+
+    try {
+      const { error: updateError } = await supabase
+        .from('margin_services')
+        .update(supabaseUpdates)
+        .eq('client_slug', clientSlug)
+        .eq('service_id', id);
+
+      if (updateError) {
+        console.error('Error updating service:', updateError);
+        setError('Ошибка сохранения');
+      }
+    } catch (err) {
+      console.error('Error updating service:', err);
+      setError('Ошибка сохранения');
+    } finally {
+      setIsSaving(false);
+    }
+  }, [clientSlug]);
 
   // Создать новую услугу
   const createService = useCallback(async (name: string) => {
@@ -105,47 +138,27 @@ export const useMarginCalculator = (clientSlug: string) => {
     }
   }, [clientSlug]);
 
-  // Обновить услугу
-  const updateService = useCallback(async (id: string, updates: Partial<MarginService>) => {
-    if (!clientSlug) return;
+  // Обновить услугу (с debounce для автосохранения)
+  const updateService = useCallback((id: string, updates: Partial<MarginService>) => {
+    // Сразу обновляем локальный state (без задержки)
+    setServices((prev) =>
+      prev.map((service) =>
+        service.id === id
+          ? { ...service, ...updates, updatedAt: Date.now() }
+          : service
+      )
+    );
 
-    const updatedService = {
-      ...updates,
-      updated_at: new Date().toISOString(),
-    };
-
-    // Маппинг полей для Supabase
-    const supabaseUpdates: any = {};
-    if (updates.name !== undefined) supabaseUpdates.name = updates.name;
-    if (updates.currentPrice !== undefined) supabaseUpdates.current_price = updates.currentPrice;
-    if (updates.expenses !== undefined) supabaseUpdates.expenses = updates.expenses;
-    supabaseUpdates.updated_at = new Date().toISOString();
-
-    try {
-      const { error: updateError } = await supabase
-        .from('margin_services')
-        .update(supabaseUpdates)
-        .eq('client_slug', clientSlug)
-        .eq('service_id', id);
-
-      if (updateError) {
-        console.error('Error updating service:', updateError);
-        setError('Ошибка обновления услуги');
-        return;
-      }
-
-      setServices((prev) =>
-        prev.map((service) =>
-          service.id === id
-            ? { ...service, ...updates, updatedAt: Date.now() }
-            : service
-        )
-      );
-    } catch (err) {
-      console.error('Error updating service:', err);
-      setError('Ошибка обновления услуги');
+    // Отменяем предыдущий таймер если есть
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
     }
-  }, [clientSlug]);
+
+    // Ставим новый таймер на сохранение через 1 секунду
+    saveTimeoutRef.current = setTimeout(() => {
+      saveToSupabase(id, updates);
+    }, 1500);
+  }, [saveToSupabase]);
 
   // Удалить услугу
   const deleteService = useCallback(async (id: string) => {
@@ -179,7 +192,15 @@ export const useMarginCalculator = (clientSlug: string) => {
     }
   }, [clientSlug, selectedServiceId]);
 
-  // Получить выбранную услугу
+  // Очистка таймера при unmount
+  useEffect(() => {
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, []);
+
   const selectedService = services.find((s) => s.id === selectedServiceId) || null;
 
   return {
@@ -191,6 +212,7 @@ export const useMarginCalculator = (clientSlug: string) => {
     updateService,
     deleteService,
     isLoading,
+    isSaving,  // ← ДОБАВИЛ для отображения индикатора сохранения
     error,
     reload: loadServices,
   };
