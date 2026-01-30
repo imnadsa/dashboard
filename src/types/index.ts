@@ -3,6 +3,7 @@ export interface AuthResponse {
   client?: {
     name: string;
     csv_url: string;
+    slug: string;
   };
   error?: string;
 }
@@ -12,6 +13,7 @@ export interface AuthState {
   isLoading: boolean;
   clientName: string | null;
   csvUrl: string | null;
+  slug: string | null;
   error: string | null;
 }
 
