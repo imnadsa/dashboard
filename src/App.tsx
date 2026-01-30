@@ -60,10 +60,10 @@ const App: React.FC = () => {
           onThemeToggle={() => setIsDark(!isDark)}
         />
       ) : (
-        <MarginCalculator isDark={isDark} clientSlug={slug || ''} />  {/* ← ИЗМЕНИЛ: использую slug из useAuth */}
+        <MarginCalculator isDark={isDark} clientSlug={slug || ''} />
       )}
     </div>
   );
 };
 
-export default App;
+export default App;м
