@@ -19,6 +19,12 @@ const App: React.FC = () => {
     return true;
   });
 
+  // Получаем slug из URL (для Supabase)
+  const clientSlug = React.useMemo(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('slug') || '';
+  }, []);
+
   // Apply theme
   React.useEffect(() => {
     if (isDark) {
@@ -60,7 +66,7 @@ const App: React.FC = () => {
           onThemeToggle={() => setIsDark(!isDark)}
         />
       ) : (
-        <MarginCalculator isDark={isDark} />
+        <MarginCalculator isDark={isDark} clientSlug={clientSlug} />
       )}
     </div>
   );
