@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { MarginService, ServiceExpenses } from '../types/margin';
-
-const STORAGE_KEY = 'margin_calculator_services';
+import { supabase } from '../lib/supabase';
 
 const createDefaultExpenses = (): ServiceExpenses => ({
   doctorSalary: { rub: 0, percent: 0 },
@@ -10,37 +9,66 @@ const createDefaultExpenses = (): ServiceExpenses => ({
   custom: [],
 });
 
-export const useMarginCalculator = () => {
+export const useMarginCalculator = (clientSlug: string) => {
   const [services, setServices] = useState<MarginService[]>([]);
   const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Загрузка из localStorage при монтировании
-  useEffect(() => {
+  // Загрузка услуг из Supabase
+  const loadServices = useCallback(async () => {
+    if (!clientSlug) return;
+    
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        setServices(parsed);
-        if (parsed.length > 0) {
-          setSelectedServiceId(parsed[0].id);
+      setIsLoading(true);
+      setError(null);
+
+      const { data, error: fetchError } = await supabase
+        .from('margin_services')
+        .select('*')
+        .eq('client_slug', clientSlug)
+        .order('created_at', { ascending: true });
+
+      if (fetchError) {
+        console.error('Error loading services:', fetchError);
+        setError('Ошибка загрузки услуг');
+        return;
+      }
+
+      if (data) {
+        const mappedServices: MarginService[] = data.map((row) => ({
+          id: row.service_id,
+          name: row.name,
+          currentPrice: row.current_price,
+          expenses: row.expenses as ServiceExpenses,
+          createdAt: new Date(row.created_at).getTime(),
+          updatedAt: new Date(row.updated_at).getTime(),
+        }));
+
+        setServices(mappedServices);
+        
+        // Автоматически выбираем первую услугу
+        if (mappedServices.length > 0 && !selectedServiceId) {
+          setSelectedServiceId(mappedServices[0].id);
         }
       }
-    } catch (error) {
-      console.error('Error loading services from localStorage:', error);
+    } catch (err) {
+      console.error('Error loading services:', err);
+      setError('Ошибка загрузки услуг');
+    } finally {
+      setIsLoading(false);
     }
-  }, []);
+  }, [clientSlug, selectedServiceId]);
 
-  // Сохранение в localStorage при изменении
+  // Загрузка при монтировании
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(services));
-    } catch (error) {
-      console.error('Error saving services to localStorage:', error);
-    }
-  }, [services]);
+    loadServices();
+  }, [loadServices]);
 
   // Создать новую услугу
-  const createService = useCallback((name: string) => {
+  const createService = useCallback(async (name: string) => {
+    if (!clientSlug) return null;
+
     const newService: MarginService = {
       id: `service_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       name,
@@ -49,36 +77,110 @@ export const useMarginCalculator = () => {
       createdAt: Date.now(),
       updatedAt: Date.now(),
     };
-    
-    setServices(prev => [...prev, newService]);
-    setSelectedServiceId(newService.id);
-    return newService;
-  }, []);
+
+    try {
+      const { error: insertError } = await supabase
+        .from('margin_services')
+        .insert({
+          client_slug: clientSlug,
+          service_id: newService.id,
+          name: newService.name,
+          current_price: newService.currentPrice,
+          expenses: newService.expenses,
+        });
+
+      if (insertError) {
+        console.error('Error creating service:', insertError);
+        setError('Ошибка создания услуги');
+        return null;
+      }
+
+      setServices((prev) => [...prev, newService]);
+      setSelectedServiceId(newService.id);
+      return newService;
+    } catch (err) {
+      console.error('Error creating service:', err);
+      setError('Ошибка создания услуги');
+      return null;
+    }
+  }, [clientSlug]);
 
   // Обновить услугу
-  const updateService = useCallback((id: string, updates: Partial<MarginService>) => {
-    setServices(prev => prev.map(service => 
-      service.id === id 
-        ? { ...service, ...updates, updatedAt: Date.now() }
-        : service
-    ));
-  }, []);
+  const updateService = useCallback(async (id: string, updates: Partial<MarginService>) => {
+    if (!clientSlug) return;
+
+    const updatedService = {
+      ...updates,
+      updated_at: new Date().toISOString(),
+    };
+
+    // Маппинг полей для Supabase
+    const supabaseUpdates: any = {};
+    if (updates.name !== undefined) supabaseUpdates.name = updates.name;
+    if (updates.currentPrice !== undefined) supabaseUpdates.current_price = updates.currentPrice;
+    if (updates.expenses !== undefined) supabaseUpdates.expenses = updates.expenses;
+    supabaseUpdates.updated_at = new Date().toISOString();
+
+    try {
+      const { error: updateError } = await supabase
+        .from('margin_services')
+        .update(supabaseUpdates)
+        .eq('client_slug', clientSlug)
+        .eq('service_id', id);
+
+      if (updateError) {
+        console.error('Error updating service:', updateError);
+        setError('Ошибка обновления услуги');
+        return;
+      }
+
+      setServices((prev) =>
+        prev.map((service) =>
+          service.id === id
+            ? { ...service, ...updates, updatedAt: Date.now() }
+            : service
+        )
+      );
+    } catch (err) {
+      console.error('Error updating service:', err);
+      setError('Ошибка обновления услуги');
+    }
+  }, [clientSlug]);
 
   // Удалить услугу
-  const deleteService = useCallback((id: string) => {
-    setServices(prev => {
-      const filtered = prev.filter(service => service.id !== id);
-      if (selectedServiceId === id && filtered.length > 0) {
-        setSelectedServiceId(filtered[0].id);
-      } else if (filtered.length === 0) {
-        setSelectedServiceId(null);
+  const deleteService = useCallback(async (id: string) => {
+    if (!clientSlug) return;
+
+    try {
+      const { error: deleteError } = await supabase
+        .from('margin_services')
+        .delete()
+        .eq('client_slug', clientSlug)
+        .eq('service_id', id);
+
+      if (deleteError) {
+        console.error('Error deleting service:', deleteError);
+        setError('Ошибка удаления услуги');
+        return;
       }
-      return filtered;
-    });
-  }, [selectedServiceId]);
+
+      setServices((prev) => {
+        const filtered = prev.filter((service) => service.id !== id);
+        if (selectedServiceId === id && filtered.length > 0) {
+          setSelectedServiceId(filtered[0].id);
+        } else if (filtered.length === 0) {
+          setSelectedServiceId(null);
+        }
+        return filtered;
+      });
+    } catch (err) {
+      console.error('Error deleting service:', err);
+      setError('Ошибка удаления услуги');
+    }
+  }, [clientSlug, selectedServiceId]);
 
   // Получить выбранную услугу
-  const selectedService = services.find(s => s.id === selectedServiceId) || null;
+  const selectedService = services.find((s) => s.id === selectedServiceId) || null;
 
   return {
     services,
@@ -88,5 +190,8 @@ export const useMarginCalculator = () => {
     createService,
     updateService,
     deleteService,
+    isLoading,
+    error,
+    reload: loadServices,
   };
 };
